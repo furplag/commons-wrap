@@ -10,7 +10,4 @@ jdk:
   - openjdk6
 
 before_install:
-  - mvn install -DskipTests=true
-
-git:
-  depth: 10
+  - mvn license:format install -DskipTests=true
