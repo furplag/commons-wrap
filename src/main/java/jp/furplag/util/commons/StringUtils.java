@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ Furplag (furplag@gmail.com)
+ * Copyright (C) 2015+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,21 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * </p>
    */
   protected StringUtils() {}
+
+  /**
+   * <p>
+   * {@code java.lang.String.replaceAll} against null.
+   * </p>
+   *
+   * @param str
+   * @param regex
+   * @param replacement
+   * @return The resulting <tt>String</tt>
+   * @see java.lang.String.replaceAll
+   */
+  public static String replaceAll(String str, String regex, String replacement) {
+    return emptyToSafely(str).replaceAll(regex, replacement);
+  }
 
   /**
    * <p>
