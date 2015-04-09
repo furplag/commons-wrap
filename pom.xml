@@ -89,8 +89,8 @@
         <configuration>
           <header>src/header.txt</header>
           <properties>
-            <owner>Furplag</owner>
-            <email>furplag@gmail.com</email>
+            <owner>furplag</owner>
+            <contact>https://github.com/furplag/</contact>
           </properties>
           <excludes>
             <exclude>**/README</exclude>
@@ -118,15 +118,15 @@
         <artifactId>site-maven-plugin</artifactId>
         <version>0.11</version>
         <configuration>
-          <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
-          <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
-          <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
-          <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
+          <message>Maven artifacts for ${project.version}</message>
+          <noJekyll>true</noJekyll>
+          <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
+          <branch>refs/heads/mvn-repo</branch>
           <includes>
             <include>**/*</include>
           </includes>
-          <repositoryName>${project.artifactId}</repositoryName>      <!-- github repo name -->
-          <repositoryOwner>furplag</repositoryOwner>    <!-- github username -->
+          <repositoryName>${project.artifactId}</repositoryName>
+          <repositoryOwner>furplag</repositoryOwner>
         </configuration>
         <executions>
           <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
