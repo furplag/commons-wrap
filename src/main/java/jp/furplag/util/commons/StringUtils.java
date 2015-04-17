@@ -34,7 +34,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * {@code StringUtils} instances should NOT be constructed in standard programming.
    * </p>
    */
-  protected StringUtils() {}
+  protected StringUtils() {
+    super();
+  }
 
   /**
    * <p>
@@ -47,8 +49,11 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return The resulting <tt>String</tt>
    * @see java.lang.String.replaceAll
    */
-  public static String replaceAll(String str, String regex, String replacement) {
-    return emptyToSafely(str).replaceAll(regex, replacement);
+  public static String replaceAll(final String str, final String regex, final String replacement) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceAll(regex, emptyToSafely(replacement));
   }
 
   /**
@@ -62,8 +67,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return The resulting <tt>String</tt>
    * @see java.util.regex.Pattern
    */
-  public static String replaceLast(String str, String regex, String replacement) {
-    return defaultString(str).replaceFirst("(?s)(.*)" + defaultString(regex), "$1" + defaultString(replacement));
+  public static String replaceLast(final String str, final String regex, final String replacement) {
+    if (isBlank(regex)) return str;
+
+    return defaultString(str).replaceFirst("(?s)(.*)" + emptyToSafely(regex), "$1" + emptyToSafely(replacement));
   }
 
   /**
@@ -86,9 +93,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    *
    * @return the length of the sequence of characters represented by this object.
    */
-  public static int length(String str) {
-    String _str = defaultString(str);
-    return getCodePoints(_str).length;
+  public static int length(final String str) {
+    return getCodePoints(defaultString(str)).length;
   }
 
   /**
@@ -108,12 +114,11 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    *
    * @return the byte length of this string.
    */
-  public static int byteLength(String str) {
-    str = defaultString(str);
-    int[] codePoints = getCodePoints(str);
+  public static int byteLength(final String str) {
+    int[] codePoints = getCodePoints(defaultString(str));
     int len = 0;
     for (int codePoint : codePoints) {
-      len += new StringBuffer().appendCodePoint(codePoint).toString().getBytes(Charset.defaultCharset()).length;
+      len += new StringBuilder().appendCodePoint(codePoint).toString().getBytes(Charset.defaultCharset()).length;
     }
 
     return len;
@@ -142,20 +147,20 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param endIndex the position to end at (exclusive), negative means count back from the end of the String by this many characters
    * @return substring from start position to end position, "" if null String input
    */
-  public static String substringUCL(String str, int beginIndex, int endIndex) {
-    str = defaultString(str);
-    int[] codePoints = getCodePoints(str);
-    if (endIndex < 0) endIndex = codePoints.length + endIndex;
-    if (codePoints.length < endIndex) endIndex = codePoints.length;
-    if (beginIndex < 0) beginIndex = codePoints.length + beginIndex;
-    if (beginIndex > endIndex) return EMPTY;
-    if (beginIndex < 0) beginIndex = 0;
-    if (endIndex < 0) endIndex = 0;
+  public static String substringUCL(final String str, final int beginIndex, final int endIndex) {
+    int[] codePoints = getCodePoints(defaultString(str));
+    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
+    if (begin < 0) begin = 0;
+    int end = (endIndex < 0 ? codePoints.length : 0) + endIndex;
+    if (end > codePoints.length) end = codePoints.length;
+    if (end < 0) end = 0;
+    if (begin > end) return EMPTY;
 
-    StringBuffer sb = new StringBuffer();
-    for (int codePoint : Arrays.copyOfRange(codePoints, beginIndex, endIndex)) {
+    StringBuilder sb = new StringBuilder();
+    for (int codePoint : Arrays.copyOfRange(codePoints, begin, end)) {
       sb.appendCodePoint(codePoint);
     }
+
     return sb.toString();
   }
 
@@ -182,23 +187,23 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return substring from start position to end position, "" if null String input
    * @exception IllegalArgumentException if a character that is more than <code>byteLen</code> bytes in the string is present
    */
-  public static String substringUBL(String str, int beginIndex, int byteLen) {
-    String _str = defaultString(str);
-    int[] codePoints = getCodePoints(_str);
-    if (beginIndex < 0) beginIndex = codePoints.length + beginIndex;
-    if (beginIndex < 0) beginIndex = 0;
-    if (beginIndex > codePoints.length) return EMPTY;
+  public static String substringUBL(final String str, final int beginIndex, final int byteLen) {
     if (byteLen < 1) return EMPTY;
+    String temporary = defaultString(str);
+    int[] codePoints = getCodePoints(temporary);
+    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
+    if (begin < 0) begin = 0;
+    if (begin > codePoints.length) return EMPTY;
 
-    StringBuffer sb = new StringBuffer();
-    int _subLen = 0;
-    for (int codePoint : Arrays.copyOfRange(codePoints, beginIndex, codePoints.length)) {
-      StringBuffer _sb = new StringBuffer().appendCodePoint(codePoint);
-      int _byteLen = byteLength(_sb.toString());
-      if (_byteLen > byteLen) throw new IllegalArgumentException("byteLen too small even for \"" + _sb + "\".");
-      if (_subLen + _byteLen > byteLen) break;
+    StringBuilder sb = new StringBuilder();
+    int subLen = 0;
+    for (int codePoint : Arrays.copyOfRange(codePoints, begin, codePoints.length)) {
+      StringBuilder internalSb = new StringBuilder().appendCodePoint(codePoint);
+      int internalSbLen = byteLength(internalSb.toString());
+      if (internalSbLen > byteLen) throw new IllegalArgumentException("byteLen too small even for \"" + internalSb + "\".");
+      if (subLen + internalSbLen > byteLen) break;
       sb.appendCodePoint(codePoint);
-      _subLen += _byteLen;
+      subLen += internalSbLen;
     }
 
     return sb.toString();
@@ -224,13 +229,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return array of strings that can fit in the specified number of bytes in the <code>byteLen</code>
    */
   public static String[] splitUBL(final String str, final int byteLen) {
-    String strShadow = defaultString(str);
-    int[] codePoints = getCodePoints(strShadow);
+    String temporary = defaultString(str);
+    int[] codePoints = getCodePoints(temporary);
     List<String> splits = new ArrayList<String>();
     for (int i = 0, next = 0; i < codePoints.length; i += next) {
       if (codePoints.length < 1) break;
       if (byteLen < 1) break;
-      splits.add(substringUBL(strShadow, i, byteLen));
+      splits.add(substringUBL(temporary, i, byteLen));
       next = length(splits.get(splits.size() - 1));
     }
 
@@ -245,7 +250,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str
    * @return Array of codepoints.
    */
-  public static int[] getCodePoints(String str) {
+  public static int[] getCodePoints(final String str) {
     char[] chars = defaultString(str).toCharArray();
     int[] ret = new int[Character.codePointCount(chars, 0, chars.length)];
     int index = 0;
@@ -280,7 +285,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param separator the separator character to use
    * @return the joined String, {@code null} if null array input
    */
-  public static String joinExcludesBlank(Object[] array, String separator) {
+  public static String joinExcludesBlank(final Object[] array, final String separator) {
     if (array == null) return null;
     return joinExcludesBlank(array, separator, 0, array.length);
   }
@@ -313,26 +318,26 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    *          an error to pass in an end index past the end of the array
    * @return the joined String, {@code null} if null array input
    */
-  public static String joinExcludesBlank(Object[] array, String separator, int beginIndex, int endIndex) {
+  public static String joinExcludesBlank(final Object[] array, final String separator, final int beginIndex, final int endIndex) {
     if (array == null) return null;
-    if (endIndex < 0) endIndex = array.length + endIndex;
-    if (array.length < endIndex) endIndex = array.length;
-    if (beginIndex < 0) beginIndex = array.length + beginIndex;
-    if (beginIndex > endIndex) return EMPTY;
-    if (beginIndex < 0) beginIndex = 0;
-    if (endIndex < 0) endIndex = 0;
+    int end = (endIndex < 0 ? array.length: 0) + endIndex;
+    if (end > array.length) end = array.length;
+    if (end < 0) end = 0;
+    int begin = (beginIndex < 0 ? array.length : 0) + beginIndex;
+    if (begin < 0) begin = 0;
+    if (begin > end) return EMPTY;
+    final int numOfItems = end - begin;
+    if (numOfItems < 1) return EMPTY;
 
-    final int noOfItems = endIndex - beginIndex;
-    if (noOfItems <= 0) return EMPTY;
-    final StringBuilder buf = new StringBuilder(noOfItems * 16);
-    for (int i = beginIndex; i < endIndex; i++) {
+    final StringBuilder sb = new StringBuilder(numOfItems * 16);
+    for (int i = begin; i < end; i++) {
       if (array[i] != null && !isBlank(defaultString(String.valueOf(array[i])))) {
-        if (i > beginIndex && buf.length() > 0) buf.append(defaultString(separator));
-        buf.append(array[i]);
+        if (i > begin && sb.length() > 0) sb.append(defaultString(separator));
+        sb.append(array[i]);
       }
     }
 
-    return buf.toString();
+    return sb.toString();
   }
 
   /**
@@ -351,9 +356,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str the String to check, may be null
    * @return {@code true} if the String is null, empty, newline or whitespace
    */
-  public static boolean isSimilarToBlank(String str) {
-    if (isBlank(str)) return true;
-    return str.replaceAll("[\\s\\r\\n\\t　]", "").length() == 0;
+  public static boolean isSimilarToBlank(final String str) {
+    return defaultString(str).replaceAll("[\\s\\r\\n\\t　]", EMPTY).length() == 0;
   }
 
   /**
@@ -364,8 +368,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str the String to check, may be null
    * @return {@code true} if the String is null, whitespace, full-width space, empty, newline or whitespace.
    */
-  public static String emptyToSafely(String str) {
-    return isSimilarToBlank(str) ? "" : str;
+  public static String emptyToSafely(final String str) {
+    return isSimilarToBlank(str) ? EMPTY : str;
   }
 
   /**
@@ -375,7 +379,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str the String, may be null
    * @return normalized string.
    */
-  public static String normalize(String str) {
+  public static String normalize(final String str) {
     return normalize(str, false);
   }
 
@@ -396,8 +400,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace
    * @return normalized string.
    */
-  public static String normalize(String str, boolean emptyToBlank) {
-    if (isSimilarToBlank(str)) return emptyToBlank ? "" : null;
+  public static String normalize(final String str, final boolean emptyToBlank) {
+    if (isSimilarToBlank(str)) return emptyToBlank ? EMPTY : null;
+
     return Normalizer.normalize(str, Normalizer.Form.NFKC).replaceAll("[\\s\\t　]+", " ").replaceAll("[‐－―−]", "-").trim();
   }
 
@@ -415,13 +420,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param hiraToKata {@code true} then Hiragana to Katakana.
    * @return Normalize a String with Japanese Kana Convert.
    */
-  public static String normalizeKana(String str, boolean hiraToKata) {
+  public static String normalizeKana(final String str, final boolean hiraToKata) {
     if (isSimilarToBlank(str)) return null;
-    String copy = normalize(str);
+    String temporary = normalize(str);
     Pattern pattern = Pattern.compile(hiraToKata ? "[\u3040-\u309F]" : "[\u30A0-\u30FF]");
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < copy.length(); i++) {
-      String s = copy.substring(i, i + 1);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < temporary.length(); i++) {
+      String s = temporary.substring(i, i + 1);
       sb.append(pattern.matcher(s).matches() ? new String(new int[]{s.codePointAt(0) + (hiraToKata ? 96 : -96)}, 0, 1) : s);
     }
 
@@ -434,7 +439,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str the String, may be null
    * @return the string leading and trailing whitespace and full-width space omitted.
    */
-  public static String trim(String str) {
+  public static String trim(final String str) {
     return trim(str, false);
   }
 
@@ -445,8 +450,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace
    * @return the string leading and trailing whitespace and full-width space omitted.
    */
-  public static String trim(String str, boolean emptyToBlank) {
-    if (isSimilarToBlank(str)) return emptyToBlank ? "" : null;
+  public static String trim(final String str, final boolean emptyToBlank) {
+    if (isSimilarToBlank(str)) return emptyToBlank ? EMPTY : null;
+
     return str.replaceAll("[\\s\\t　]+", " ").trim();
   }
 
@@ -456,7 +462,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @param str the String, may be null
    * @return the lower case string, with whitespace and full-width space omitted.
    */
-  public static String flatten(String str) {
-    return trim(str, true).toLowerCase().replaceAll("\\s", "");
+  public static String flatten(final String str) {
+    return trim(str, true).toLowerCase().replaceAll("\\s", EMPTY);
   }
 }

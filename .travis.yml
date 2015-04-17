@@ -10,4 +10,4 @@ jdk:
   - openjdk6
 
 before_install:
-  - mvn license:format install -DskipTests=true
+  - mvn clean install

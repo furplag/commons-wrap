@@ -30,7 +30,16 @@ public class StringUtilsTest {
   public void setUp() throws Exception {}
 
   @Test
-  public void testStringUtils() {}
+  public void testReplaceAll() {
+    assertEquals(null, StringUtils.replaceAll(null, null, null));
+    assertEquals(null, StringUtils.replaceAll(null, "test", "Test"));
+    assertEquals("Test", StringUtils.replaceAll("test", "test", "Test"));
+    assertEquals("test", StringUtils.replaceAll("test", null, "Test"));
+    assertEquals("test", StringUtils.replaceAll("test", "", "Test"));
+    assertEquals("", StringUtils.replaceAll("test", "test", null));
+    assertEquals("", StringUtils.replaceAll("test", "test", ""));
+    assertEquals("test", StringUtils.replaceAll("test", "Test", ""));
+  }
 
   @Test
   public void testReplaceLast() {
