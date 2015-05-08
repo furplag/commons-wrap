@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.0</version>
   <inceptionYear>2015</inceptionYear>
   <name>commons-wrap</name>
   <description>Wrapped Apache Commons Maven Repository.</description>
