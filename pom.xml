@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <inceptionYear>2015</inceptionYear>
   <name>commons-wrap</name>
   <description>Wrapped Apache Commons Maven Repository.</description>
@@ -65,6 +65,16 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ocpsoft.prettytime</groupId>
+      <artifactId>prettytime</artifactId>
+      <version>4.0.0.Final</version>
     </dependency>
   </dependencies>
   <build>
@@ -140,6 +150,7 @@
           <includes>
             <include>**/*</include>
           </includes>
+          <merge>true</merge>
           <repositoryName>${project.artifactId}</repositoryName>
           <repositoryOwner>furplag</repositoryOwner>
         </configuration>
