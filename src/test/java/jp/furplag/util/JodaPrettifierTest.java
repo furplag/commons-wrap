@@ -1277,11 +1277,11 @@ public class JodaPrettifierTest {
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
 
     dateTime = dateTime.minusDays(1);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
   }
 
   @Test
@@ -1297,11 +1297,11 @@ public class JodaPrettifierTest {
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
 
     dateTime = dateTime.minusDays(1);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
   }
 
   @Test
@@ -1317,11 +1317,11 @@ public class JodaPrettifierTest {
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
 
     dateTime = dateTime.minusDays(1);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
-    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, zone, range));
+    assertEquals(expected, JodaPrettifier.prettifyWithLimitByDays(dateTime, locale, zone, range));
   }
 
   @Test
@@ -2048,8 +2048,8 @@ public class JodaPrettifierTest {
   public final void testPrettifyWithLimitByYearsObjectInteger() {
     DateTime dateTime = DateTime.now().minusDays(1);
     int range = 1;
-    Locale locale = Locale.JAPAN;
-    DateTimeZone zone = DateTimeZone.forID("Asia/Tokyo");
+    Locale locale = Locale.getDefault();
+    DateTimeZone zone = DateTimeZone.getDefault();
     Period period = new Period().withYears(range);
 
     Locale expectedLocale = locale;
