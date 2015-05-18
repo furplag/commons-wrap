@@ -1091,9 +1091,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(dateTimeString, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(millis, locale, zone, period));
 
-
-    locale = Locale.ROOT;
-    zone = DateTimeZone.UTC;
+    locale = Locale.JAPAN;
+    zone = DateTimeZone.forID("Asia/Tokyo");
     period = new Period();
     expected = dateTime.withZone(zone).toString(DateTimeFormat.mediumDateTime());
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
