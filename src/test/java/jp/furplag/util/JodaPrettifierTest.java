@@ -51,7 +51,7 @@ public class JodaPrettifierTest {
     assertEquals(Locale.JAPAN, JodaPrettifier.newLocale("ja_JP"));
     assertTrue(new Locale("ja", "JP", "JP").toString().startsWith(JodaPrettifier.newLocale("ja_JP_JP").toString()));
     for (Locale locale : Locale.getAvailableLocales()) {
-      assertEquals(locale, JodaPrettifier.newLocale(locale.toString()));
+      assertEquals(locale.getDisplayName(), JodaPrettifier.newLocale(locale.toString()).getDisplayName());
     }
   }
 
