@@ -15,7 +15,7 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,7 +49,7 @@ public class JodaPrettifierTest {
     assertEquals(Locale.ROOT, JodaPrettifier.newLocale("japan_JAPANESE"));
     assertEquals(Locale.JAPANESE, JodaPrettifier.newLocale("ja"));
     assertEquals(Locale.JAPAN, JodaPrettifier.newLocale("ja_JP"));
-    assertEquals(new Locale("ja", "JP", "JP"), JodaPrettifier.newLocale("ja_JP_JP"));
+    assertTrue(new Locale("ja", "JP", "JP").toString().startsWith(JodaPrettifier.newLocale("ja_JP_JP").toString()));
     for (Locale locale : Locale.getAvailableLocales()) {
       assertEquals(locale, JodaPrettifier.newLocale(locale.toString()));
     }
