@@ -1120,7 +1120,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(millis, locale, zone, period));
 
     period = new Period().withYears(1);
-    expected = dateTime.toString(DateTimeFormat.mediumDateTime());
+    expected = dateTime.withZone(zone).toString(DateTimeFormat.mediumDateTime());
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(dateTime, locale, zone, period));
@@ -1145,7 +1145,7 @@ public class JodaPrettifierTest {
     assertEquals(new PrettyTime().setLocale(locale).format(date), JodaPrettifier.prettify(millis, locale, zone, period));
 
     period = new Period().withMinutes(10);
-    expected = thirtyMinutesAfter.toString(DateTimeFormat.mediumTime());
+    expected = thirtyMinutesAfter.withZone(zone).toString(DateTimeFormat.mediumTime());
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(dateTime, locale, zone, period));
