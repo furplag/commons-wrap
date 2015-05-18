@@ -1069,19 +1069,11 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(dateTimeString, locale, zone, period));
     dateTimeString = "1995-05-23T00:00:00+9";
     assertEquals(expected, JodaPrettifier.prettify(dateTimeString, locale, zone, period));
-
-    dateTimeString = "1995-05-23T00:00:00+09:00";
+    dateTimeString = "1995-05-23T09:00:00+09:00";
     prettyTime = new PrettyTime(DateTime.now().toDate());
-    calendar = Calendar.getInstance();
-    calendar.set(Calendar.YEAR, 1995);
-    calendar.set(Calendar.MONTH, 5 - 1);
-    calendar.set(Calendar.DATE, 23);
-    calendar.set(Calendar.HOUR_OF_DAY, 0);
-    calendar.set(Calendar.MINUTE, 0);
-    calendar.set(Calendar.SECOND, 0);
-    calendar.set(Calendar.MILLISECOND, 0);
-    date = calendar.getTime();
-    dateTime = new DateTime(date);
+    dateTime = new DateTime(dateTimeString);
+    calendar = dateTime.toGregorianCalendar();
+    date = dateTime.toDate();
     millis = dateTime.getMillis();
 
     expected = prettyTime.setLocale(Locale.ROOT).format(date);
@@ -1091,8 +1083,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(dateTimeString, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(millis, locale, zone, period));
 
-    locale = Locale.JAPAN;
-    zone = DateTimeZone.forID("Asia/Tokyo");
+    locale = Locale.ROOT;
+    zone = DateTimeZone.UTC;
     period = new Period();
     expected = dateTime.withZone(zone).toString(DateTimeFormat.mediumDateTime());
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
