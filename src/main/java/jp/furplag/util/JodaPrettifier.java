@@ -151,9 +151,9 @@ public class JodaPrettifier {
       DateTime now = new DateTime(temporary.getZone());
       if (limit == null) return new PrettyTime(now.toDate()).setLocale(locale == null ? Locale.ROOT : locale).format(temporary.toDate());
       if (new Interval(now.minus(limit).withMillisOfSecond(0).minusSeconds(1), now.plus(limit).withMillisOfSecond(0).plusSeconds(1)).contains(temporary)) return new PrettyTime(now.toDate()).setLocale(locale == null ? Locale.ROOT : locale).format(temporary.toDate());
-      if (temporary.toString(DateTimeFormat.shortDate()).equals(now.toString(DateTimeFormat.shortDate()))) return temporary.toString(DateTimeFormat.mediumTime());
+      if (temporary.toString(DateTimeFormat.shortDate()).equals(now.toString(DateTimeFormat.shortDate()))) return temporary.withZone(dateTimeZone == null ? DateTimeZone.UTC : dateTimeZone).toString(DateTimeFormat.mediumTime());
 
-      return temporary.toString(DateTimeFormat.mediumDateTime());
+      return temporary.withZone(dateTimeZone == null ? DateTimeZone.UTC : dateTimeZone).toString(DateTimeFormat.mediumDateTime());
     } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }

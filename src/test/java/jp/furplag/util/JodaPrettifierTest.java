@@ -1208,7 +1208,7 @@ public class JodaPrettifierTest {
   public final void testPrettifyWithLimitByDaysObjectStringInteger() {
     DateTime dateTime = DateTime.now().minusHours(1);
     int range = 1;
-    Locale locale = Locale.JAPAN;
+    Locale locale = Locale.getDefault();
     String zone = "Asia/Tokyo";
     Period period = new Period().withDays(range);
 
