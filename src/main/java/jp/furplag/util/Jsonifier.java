@@ -33,18 +33,33 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+/**
+ * Converter between Object and JSON.
+ * @author furplag.jp
+ *
+ *
+ */
 public class Jsonifier {
 
+  /**
+   * @see com.fasterxml.jackson.databind.ObjectMapper
+   */
   protected static ObjectMapper mapper = new ObjectMapper();
   static {
     mapper = mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
+  /**
+   * <p>
+   * {@code StringUtils} instances should NOT be constructed in standard programming.
+   * </p>
+   */
   protected Jsonifier() {}
 
   public static String stringify(final Object obj) throws JsonGenerationException, JsonMappingException, IOException {
     return mapper.writeValueAsString(obj);
   }
+
 
   public static String stringifyLazy(final Object obj) {
     return stringifyLazy(obj, false);

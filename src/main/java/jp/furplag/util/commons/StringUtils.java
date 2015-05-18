@@ -40,6 +40,51 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   /**
    * <p>
+   * Shorthand for {@code java.lang.String.replaceAll(regex, "")}.
+   * </p>
+   *
+   * @param str the String, may be null
+   * @param regex the regular expression to which this string is to be matched
+   * @return The resulting <tt>String</tt>
+   */
+  public static String truncateAll(final String str, final String regex) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceAll(regex, EMPTY);
+  }
+
+  /**
+   * <p>
+   * Shorthand for {@code java.lang.String.replaceFirst(regex, "")}.
+   * </p>
+   *
+   * @param str the String, may be null
+   * @param regex the regular expression to which this string is to be matched
+   * @return The resulting <tt>String</tt>
+   */
+  public static String truncateFirst(final String str, final String regex) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceFirst(regex, EMPTY);
+  }
+
+  /**
+   * <p>
+   * Shorthand for {@code jp.furplag.util.commons.StringUtils.replaceLast(str, regex, "")}.
+   * </p>
+   *
+   * @param str the String, may be null
+   * @param regex the regular expression to which this string is to be matched
+   * @return The resulting <tt>String</tt>
+   */
+  public static String truncateLast(final String str, final String regex) {
+    return replaceLast(str, regex, EMPTY);
+  }
+
+  /**
+   * <p>
    * {@code java.lang.String.replaceAll} against null.
    * </p>
    *
@@ -68,6 +113,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @see java.util.regex.Pattern
    */
   public static String replaceLast(final String str, final String regex, final String replacement) {
+    if (isSimilarToBlank(str)) return str;
     if (isBlank(regex)) return str;
 
     return defaultString(str).replaceFirst("(?s)(.*)" + emptyToSafely(regex), "$1" + emptyToSafely(replacement));
