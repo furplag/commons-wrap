@@ -118,9 +118,9 @@ public class ResourceUtilsTest {
 
   @Test
   public final void testGetStringStringObjectStringString() {
-    assertEquals(ResourceUtils.get(baseName, "not.exist", 1, "default", Locale.getDefault()), ResourceUtils.get(baseName, "not.exist", 1, "default", "ja"));
-    assertEquals(ResourceUtils.get(baseName, "test.test", "test", "default", Locale.getDefault()), ResourceUtils.get(baseName, "test.test", "test", "default", "ja_JP"));
-    assertEquals(ResourceUtils.get(baseName, "test.test", "[,1,]".split(","), "default", Locale.getDefault()), ResourceUtils.get(baseName, "test.test", "[,1,]", "default", "ja_JP"));
+    assertEquals(ResourceUtils.get(baseName, "not.exist", 1, "default", Locale.JAPAN), ResourceUtils.get(baseName, "not.exist", 1, "default", "ja"));
+    assertEquals(ResourceUtils.get(baseName, "test.test", "test", "default", Locale.JAPAN), ResourceUtils.get(baseName, "test.test", "test", "default", "ja_JP"));
+    assertEquals(ResourceUtils.get(baseName, "test.test", "[,1,]".split(","), "default", Locale.JAPAN), ResourceUtils.get(baseName, "test.test", "[,1,]", "default", "ja_JP"));
   }
 
   @Test
