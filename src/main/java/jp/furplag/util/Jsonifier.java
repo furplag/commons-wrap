@@ -142,7 +142,9 @@ public class Jsonifier {
   }
 
   private static Object newArray(final String inference) throws IllegalArgumentException, NegativeArraySizeException, ClassNotFoundException {
+    if (StringUtils.isSimilarToBlank(inference)) return null;
     String className = inference.replaceAll("\\[", "");
+
     return Array.newInstance(Class.forName(className.replaceAll("\\]", "")), new int[inference.length() - className.length() + 1]);
   }
 }

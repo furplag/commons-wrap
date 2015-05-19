@@ -15,15 +15,13 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -40,131 +38,6 @@ public class JodaPrettifierTest {
 
   @Before
   public void setUp() throws Exception {}
-
-  @Test
-  public final void testNewLocale() {
-    assertEquals(Locale.getDefault(), JodaPrettifier.newLocale(null));
-    assertEquals(Locale.ROOT, JodaPrettifier.newLocale(""));
-    assertEquals(Locale.ROOT, JodaPrettifier.newLocale("_"));
-    assertEquals(Locale.ROOT, JodaPrettifier.newLocale("japan_JAPANESE"));
-    assertEquals(Locale.JAPANESE, JodaPrettifier.newLocale("ja"));
-    assertEquals(Locale.JAPAN, JodaPrettifier.newLocale("ja_JP"));
-    assertTrue(new Locale("ja", "JP", "JP").toString().startsWith(JodaPrettifier.newLocale("ja_JP_JP").toString()));
-    for (Locale locale : Locale.getAvailableLocales()) {
-      assertTrue(locale.toString().startsWith(JodaPrettifier.newLocale(locale.toString()).toString()));
-    }
-  }
-
-  @Test
-  public final void testNewTimeZone() {
-    String dateTimeString = "1995-05-23T00:00:00Z";
-    DateTime dateTime = new DateTime(dateTimeString);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(dateTime.getMillis());
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    TimeZone zone = null;
-
-    String expected = "";
-    String actual = "";
-    assertEquals(TimeZone.getDefault(), JodaPrettifier.newTimeZone(null));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), JodaPrettifier.newTimeZone(""));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), JodaPrettifier.newTimeZone("/"));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), JodaPrettifier.newTimeZone("Asia"));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), JodaPrettifier.newTimeZone("Asia/"));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, JodaPrettifier.newTimeZone("Asia/Tokyo").getOffset(DateTime.now(DateTimeZone.UTC).getMillis()));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, JodaPrettifier.newTimeZone("JST").getOffset(DateTime.now(DateTimeZone.UTC).getMillis()));
-    for (String id : TimeZone.getAvailableIDs()) {
-      zone = TimeZone.getTimeZone(id);
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      expected = id + ":" + sdf.format(calendar.getTime());
-      zone = JodaPrettifier.newTimeZone(id);
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      actual = id + ":" + sdf.format(calendar.getTime());
-      assertEquals(expected, actual);
-    }
-  }
-
-  @Test
-  public final void testNewDateTimeZoneString() {
-    String dateTimeString = "1995-05-23T00:00:00Z";
-    DateTime dateTime = new DateTime(dateTimeString);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(dateTime.getMillis());
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    TimeZone zone = null;
-
-    String expected = "";
-    String actual = "";
-
-    String instant = null;
-
-    assertEquals(DateTimeZone.getDefault(), JodaPrettifier.newDateTimeZone(instant));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone(""));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone("/"));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone("Asia"));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone("Asia/"));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, JodaPrettifier.newDateTimeZone("Asia/Tokyo").getOffset(DateTime.now(DateTimeZone.UTC)));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, JodaPrettifier.newDateTimeZone("JST").getOffset(DateTime.now(DateTimeZone.UTC)));
-    for (String id : DateTimeZone.getAvailableIDs()) {
-      expected = dateTime.withZone(DateTimeZone.forID(id)).toString();
-      actual = dateTime.withZone(JodaPrettifier.newDateTimeZone(id)).toString();
-      assertEquals(expected, actual);
-    }
-    for (String id : TimeZone.getAvailableIDs()) {
-      zone = TimeZone.getTimeZone(id);
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      expected = id + ":" + sdf.format(calendar.getTime());
-      zone = JodaPrettifier.newDateTimeZone(id).toTimeZone();
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      actual = id + ":" + sdf.format(calendar.getTime());
-      assertEquals(expected, actual);
-    }
-  }
-
-  @Test
-  public final void testNewDateTimeZoneTimeZone() {
-    String dateTimeString = "1995-05-23T00:00:00Z";
-    DateTime dateTime = new DateTime(dateTimeString);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(dateTime.getMillis());
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    TimeZone zone = null;
-
-    String expected = "";
-    String actual = "";
-
-    assertEquals(DateTimeZone.getDefault(), JodaPrettifier.newDateTimeZone(zone));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone(TimeZone.getTimeZone("")));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone(TimeZone.getTimeZone("/")));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone(TimeZone.getTimeZone("Asia")));
-    assertEquals(DateTimeZone.UTC, JodaPrettifier.newDateTimeZone(TimeZone.getTimeZone("Asia/")));
-
-    zone = TimeZone.getTimeZone("Asia/Tokyo");
-    expected = dateTime.withZone(DateTimeZone.forTimeZone(zone)).toString(DateTimeFormat.forStyle("MS"));
-    actual = dateTime.withZone(JodaPrettifier.newDateTimeZone(zone)).toString(DateTimeFormat.forStyle("MS"));
-    assertEquals(expected, actual);
-
-    zone = TimeZone.getTimeZone("JST");
-    expected = dateTime.withZone(DateTimeZone.forTimeZone(zone)).toString(DateTimeFormat.forStyle("MS"));
-    actual = dateTime.withZone(JodaPrettifier.newDateTimeZone(zone)).toString(DateTimeFormat.forStyle("MS"));
-    assertEquals(expected, actual);
-
-    for (String id : TimeZone.getAvailableIDs()) {
-      zone = TimeZone.getTimeZone(id.replaceAll("^EST$", "EST5EDT").replaceAll("^MST$", "MST7MDT"));
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      expected = id + ":" + sdf.format(calendar.getTime());
-      zone = JodaPrettifier.newDateTimeZone(zone).toTimeZone();
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      actual = id + ":" + sdf.format(calendar.getTime());
-      assertEquals(expected, actual);
-    }
-  }
 
   @Test
   public final void testPrettifyObject() {
@@ -260,8 +133,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("", new Period().withMonths(1)));
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", new Period().withMonths(1)));
 
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -271,8 +144,8 @@ public class JodaPrettifierTest {
 
     locale = Locale.getDefault().toString();
     zone = DateTimeZone.getDefault().getID();
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -282,8 +155,8 @@ public class JodaPrettifierTest {
 
     locale = "";
     zone = "";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -293,8 +166,8 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = "EST";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -304,8 +177,8 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = "Asia/Tokyo";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -335,8 +208,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone, period));
 
     period = new Period();
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -347,8 +220,8 @@ public class JodaPrettifierTest {
     locale = Locale.getDefault().toString();
     zone = DateTimeZone.getDefault().getID();
     period = new Period().withYears(100);
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -358,8 +231,8 @@ public class JodaPrettifierTest {
 
     locale = "";
     zone = "";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -369,8 +242,8 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = "EST";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -380,8 +253,8 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = "Asia/Tokyo";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -411,8 +284,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("", locale, zone));
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone));
 
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -421,8 +294,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(millis, locale, zone));
 
     locale = "";
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -431,7 +304,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify(millis, locale, zone));
 
     zone = TimeZone.getTimeZone("GMT");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -441,8 +314,8 @@ public class JodaPrettifierTest {
 
     locale = Locale.getDefault().toString();
     zone = TimeZone.getDefault();
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -452,8 +325,8 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = TimeZone.getTimeZone("Etc/GMT-5");
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -463,8 +336,8 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = TimeZone.getTimeZone("JST");
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -497,8 +370,8 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone, new Period().withMonths(1)));
 
     period = new Period();
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -509,8 +382,8 @@ public class JodaPrettifierTest {
     locale = Locale.getDefault().toString();
     zone = TimeZone.getDefault();
     period = new Period().withYears(100);
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -520,8 +393,8 @@ public class JodaPrettifierTest {
 
     locale = "";
     zone = TimeZone.getTimeZone("Etc/GMT0");
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -531,8 +404,8 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = TimeZone.getTimeZone("US/Eastern");
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -542,8 +415,8 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = TimeZone.getTimeZone("JST");
-    expectedLocale = JodaPrettifier.newLocale(locale);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedLocale = Localizer.newLocale(locale);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -571,7 +444,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("", locale, zone));
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone));
 
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -581,7 +454,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.getDefault().toString();
     zone = DateTimeZone.getDefault();
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -591,7 +464,7 @@ public class JodaPrettifierTest {
 
     locale = "";
     zone = DateTimeZone.forID("Europe/London");
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -601,7 +474,7 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = DateTimeZone.forID("EST");
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -611,7 +484,7 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = DateTimeZone.forID("Japan");
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -643,7 +516,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone, new Period().withMonths(1)));
 
     period = new Period();
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -654,7 +527,7 @@ public class JodaPrettifierTest {
     locale = Locale.getDefault().toString();
     zone = DateTimeZone.getDefault();
     period = new Period().withYears(100);
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -664,7 +537,7 @@ public class JodaPrettifierTest {
 
     locale = "";
     zone = DateTimeZone.UTC;
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -674,7 +547,7 @@ public class JodaPrettifierTest {
 
     locale = "en_US";
     zone = DateTimeZone.forID("EST");
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -684,7 +557,7 @@ public class JodaPrettifierTest {
 
     locale = "ja_JP";
     zone = DateTimeZone.forID("Japan");
-    expectedLocale = JodaPrettifier.newLocale(locale);
+    expectedLocale = Localizer.newLocale(locale);
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, zone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -712,7 +585,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("", locale, zone));
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone));
 
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -722,7 +595,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.getDefault();
     zone = DateTimeZone.getDefault().getID();
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -732,7 +605,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.ROOT;
     zone = "";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -742,7 +615,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.US;
     zone = "EST";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -752,7 +625,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.JAPAN;
     zone = "Asia/Tokyo";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -784,7 +657,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone, new Period().withMonths(1)));
 
     period = new Period();
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -795,7 +668,7 @@ public class JodaPrettifierTest {
     locale = Locale.getDefault();
     zone = DateTimeZone.getDefault().getID();
     period = new Period().withYears(100);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -805,7 +678,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.ROOT;
     zone = "GMT-0";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -815,7 +688,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.US;
     zone = "GMT-5";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -825,7 +698,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.JAPAN;
     zone = "GMT+9";
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -853,7 +726,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("", locale, zone));
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone));
 
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -863,7 +736,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.getDefault();
     zone = TimeZone.getDefault();
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -873,7 +746,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.ROOT;
     zone = TimeZone.getTimeZone("UTC");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -883,7 +756,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.US;
     zone = TimeZone.getTimeZone("US/Eastern");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -893,7 +766,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.JAPAN;
     zone = TimeZone.getTimeZone("Asia/Tokyo");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone));
@@ -925,7 +798,7 @@ public class JodaPrettifierTest {
     assertEquals(expected, JodaPrettifier.prettify("invalidDate", locale, zone, new Period().withMonths(1)));
 
     period = new Period();
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -936,7 +809,7 @@ public class JodaPrettifierTest {
     locale = Locale.getDefault();
     zone = TimeZone.getDefault();
     period = new Period().withYears(100);
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -946,7 +819,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.ROOT;
     zone = TimeZone.getTimeZone("UTC");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -956,7 +829,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.US;
     zone = TimeZone.getTimeZone("US/Eastern");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -966,7 +839,7 @@ public class JodaPrettifierTest {
 
     locale = Locale.JAPAN;
     zone = TimeZone.getTimeZone("Asia/Tokyo");
-    expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     expected = JodaPrettifier.prettify(dateTime, locale, expectedDateTimeZone, period);
     assertEquals(expected, JodaPrettifier.prettify(calendar, locale, zone, period));
     assertEquals(expected, JodaPrettifier.prettify(date, locale, zone, period));
@@ -1202,7 +1075,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withDays(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1222,7 +1095,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withDays(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1261,8 +1134,8 @@ public class JodaPrettifierTest {
     String zone = "Asia/Tokyo";
     Period period = new Period().withDays(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1281,8 +1154,8 @@ public class JodaPrettifierTest {
     TimeZone zone = TimeZone.getTimeZone("Asia/Tokyo");
     Period period = new Period().withDays(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1301,7 +1174,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.forID("Asia/Tokyo");
     Period period = new Period().withDays(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -1322,7 +1195,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withDays(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1342,7 +1215,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withDays(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1422,7 +1295,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withHours(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1442,7 +1315,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withHours(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1481,8 +1354,8 @@ public class JodaPrettifierTest {
     String zone = "Asia/Tokyo";
     Period period = new Period().withHours(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1501,8 +1374,8 @@ public class JodaPrettifierTest {
     TimeZone zone = TimeZone.getTimeZone("Asia/Tokyo");
     Period period = new Period().withHours(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1521,7 +1394,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.forID("Asia/Tokyo");
     Period period = new Period().withHours(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -1542,7 +1415,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withHours(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1562,7 +1435,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withHours(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1642,7 +1515,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withMonths(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1662,7 +1535,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withMonths(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1701,8 +1574,8 @@ public class JodaPrettifierTest {
     String zone = "Asia/Tokyo";
     Period period = new Period().withMonths(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1721,8 +1594,8 @@ public class JodaPrettifierTest {
     TimeZone zone = TimeZone.getTimeZone("Asia/Tokyo");
     Period period = new Period().withMonths(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1741,7 +1614,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.forID("Asia/Tokyo");
     Period period = new Period().withMonths(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -1762,7 +1635,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withMonths(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1782,7 +1655,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withMonths(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1862,7 +1735,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withWeeks(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1882,7 +1755,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withWeeks(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1921,8 +1794,8 @@ public class JodaPrettifierTest {
     String zone = "Asia/Tokyo";
     Period period = new Period().withWeeks(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1941,8 +1814,8 @@ public class JodaPrettifierTest {
     TimeZone zone = TimeZone.getTimeZone("Asia/Tokyo");
     Period period = new Period().withWeeks(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -1961,7 +1834,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.forID("Asia/Tokyo");
     Period period = new Period().withWeeks(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -1982,7 +1855,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withWeeks(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2002,7 +1875,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withWeeks(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2082,7 +1955,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withYears(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2102,7 +1975,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withYears(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2141,8 +2014,8 @@ public class JodaPrettifierTest {
     String zone = "Asia/Tokyo";
     Period period = new Period().withYears(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2161,8 +2034,8 @@ public class JodaPrettifierTest {
     TimeZone zone = TimeZone.getTimeZone("Asia/Tokyo");
     Period period = new Period().withYears(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    Locale expectedLocale = Localizer.newLocale(locale);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2181,7 +2054,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.getDefault();
     Period period = new Period().withYears(range);
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -2202,7 +2075,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withYears(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2222,7 +2095,7 @@ public class JodaPrettifierTest {
     Period period = new Period().withYears(range);
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2260,7 +2133,7 @@ public class JodaPrettifierTest {
     DateTimeZone zone = DateTimeZone.getDefault();
     Period period = null;
 
-    Locale expectedLocale = JodaPrettifier.newLocale(locale);
+    Locale expectedLocale = Localizer.newLocale(locale);
     DateTimeZone expectedDateTimeZone = zone;
     String expected = "";
 
@@ -2291,7 +2164,7 @@ public class JodaPrettifierTest {
     Period period = null;
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);
@@ -2306,7 +2179,7 @@ public class JodaPrettifierTest {
     Period period = null;
 
     Locale expectedLocale = locale;
-    DateTimeZone expectedDateTimeZone = JodaPrettifier.newDateTimeZone(zone);
+    DateTimeZone expectedDateTimeZone = Localizer.newDateTimeZone(zone);
     String expected = "";
 
     expected = JodaPrettifier.prettify(dateTime, expectedLocale, expectedDateTimeZone, period);

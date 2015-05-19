@@ -25,7 +25,7 @@ import jp.furplag.util.commons.StringUtils;
 
 public class ResourceUtils {
 
-  private static final String FORMAT_PATTERN = "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}";
+  protected static final String FORMAT_PATTERN = "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}";
 
   protected ResourceUtils() {}
 
@@ -66,7 +66,7 @@ public class ResourceUtils {
   }
 
   public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final String locale) {
-    return get(baseName, key, arguments, defaultString, JodaPrettifier.newLocale(locale));
+    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
   }
 
   public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final Locale locale) {
@@ -75,7 +75,7 @@ public class ResourceUtils {
   }
 
   public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final String locale) {
-    return get(baseName, key, arguments, defaultString, JodaPrettifier.newLocale(locale));
+    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
   }
 
   public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final Locale locale) {
