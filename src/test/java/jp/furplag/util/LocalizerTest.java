@@ -15,18 +15,13 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -35,8 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableMap;
 
 public class LocalizerTest {
 
