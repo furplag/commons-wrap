@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <inceptionYear>2015</inceptionYear>
   <name>commons-wrap</name>
   <description>Wrapped Apache Commons Maven Repository.</description>
@@ -45,6 +45,11 @@
       <artifactId>mockito-all</artifactId>
       <version>1.9.5</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

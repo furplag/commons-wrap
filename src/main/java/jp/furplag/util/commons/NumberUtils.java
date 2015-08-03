@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package jp.furplag.util.commons;
 
 import java.math.BigDecimal;
@@ -8,6 +23,10 @@ import java.math.RoundingMode;
 import org.apache.commons.lang3.Range;
 
 public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
+
+  protected NumberUtils() {
+    super();
+  }
 
   protected static enum Numbers {
     BigDecimal(7), BigInteger(4), Byte(0), Double(6), Float(5), Integer(2), Long(3), Short(1);
@@ -229,9 +248,6 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     }
   }
 
-  public static void main(String[] args) {
-    System.out.println(NumberUtils.materialize(Math.PI, 0L));
-  }
   /**
    * <p>
    * Casting itself for Generic method return value.
@@ -369,6 +385,4 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
     return materialize(materialize(angle, BigDecimal.class).multiply(divide(new BigDecimal(Math.PI), new BigDecimal(180d))), angle);
   }
-
-  protected NumberUtils() {}
 }
