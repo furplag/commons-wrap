@@ -45,15 +45,21 @@ public final class Localizer {
     AvailableLocales.show();
   }
 
+  public static Locale newLocale(final Object locale) {
+    if (locale != null && locale instanceof Locale) return newLocale(((Locale)locale).toString());
+
+    return newLocale(locale == null ? new String[]{} : new String[]{locale.toString()});
+  }
+
   public static Locale newLocale(final String... arguments) {
     return newLocale(true, arguments);
   }
 
-  protected static Locale newLocale(final boolean fallBackDefault, final String... arguments) {
+  public static Locale newLocale(final boolean fallBackDefault, final String... arguments) {
     return AvailableLocales.get(fallBackDefault, arguments);
   }
 
-  protected static TimeZone newTimeZone(final String id) {
+  public static TimeZone newTimeZone(final String id) {
     if (id == null) return TimeZone.getDefault();
     if (StringUtils.isSimilarToBlank(id)) return DateTimeZone.UTC.toTimeZone();
     if (!Sets.newHashSet(TimeZone.getAvailableIDs()).contains(StringUtils.trim(id))) return DateTimeZone.UTC.toTimeZone();
@@ -62,7 +68,14 @@ public final class Localizer {
     return TimeZoneCemetery.get(id);
   }
 
-  protected static DateTimeZone newDateTimeZone(final String id) {
+  public static DateTimeZone newDateTimeZone(final Object zone) {
+    if (zone != null && zone instanceof DateTimeZone) return (DateTimeZone)zone;
+    if (zone != null && zone instanceof TimeZone) return newDateTimeZone((TimeZone)zone);
+
+    return newDateTimeZone(zone == null ? null : zone.toString());
+  }
+
+  public static DateTimeZone newDateTimeZone(final String id) {
     if (id == null) return DateTimeZone.getDefault();
     if (StringUtils.isSimilarToBlank(id)) return DateTimeZone.UTC;
     if (Sets.newHashSet(DateTimeZone.getAvailableIDs()).contains(StringUtils.trim(id))) return DateTimeZone.forID(StringUtils.trim(id));
@@ -71,7 +84,7 @@ public final class Localizer {
     return DateTimeZone.UTC;
   }
 
-  protected static DateTimeZone newDateTimeZone(final TimeZone zone) {
+  public static DateTimeZone newDateTimeZone(final TimeZone zone) {
     if (zone == null) return DateTimeZone.getDefault();
     if (Sets.newHashSet(DateTimeZone.getAvailableIDs()).contains(StringUtils.trim(zone.getID()))) return DateTimeZone.forTimeZone(zone);
     if (!Sets.newHashSet(TimeZone.getAvailableIDs()).contains(StringUtils.trim(zone.getID()))) return DateTimeZone.UTC;
