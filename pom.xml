@@ -33,6 +33,16 @@
     <!-- github server corresponds to entry in ~/.m2/settings.xml -->
     <github.global.server>github</github.global.server>
   </properties>
+  <repositories>
+    <repository>
+      <id>webinspector</id>
+      <url>https://raw.github.com/furplag/prettytime/mvn-repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -84,7 +94,7 @@
     <dependency>
       <groupId>org.ocpsoft.prettytime</groupId>
       <artifactId>prettytime</artifactId>
-      <version>4.0.0.Final</version>
+      <version>4.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
