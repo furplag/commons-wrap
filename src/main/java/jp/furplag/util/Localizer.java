@@ -46,6 +46,7 @@ public final class Localizer {
   }
 
   public static Locale newLocale(final Object locale) {
+    if (locale != null && locale instanceof Boolean) return newLocale(((Boolean)locale), new String[]{});
     if (locale != null && locale instanceof Locale) return newLocale(((Locale)locale).toString());
 
     return newLocale(locale == null ? new String[]{} : new String[]{locale.toString()});
