@@ -32,15 +32,13 @@ import org.ocpsoft.prettytime.units.JustNow;
 /**
  * Social Style Date and Time Formatting for Joda-Time.
  *
- * @author furplag.jp
+ * @author furplag
  *
  *
  */
 public class JodaPrettifier {
 
   protected static final String PRETTYTIME_RESOURCE = "org.ocpsoft.prettytime.i18n.Resources";
-
-  protected JodaPrettifier() {}
 
   /**
    * <p>
@@ -125,6 +123,41 @@ public class JodaPrettifier {
   }
 
   /**
+   * Return the prettified String if the period includes specified moment.
+   *
+   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, null, null, null, true)} => "one hour ago."</p>
+   * <p>{@code JodaPrettifier.prettify(DateTime.now(), DateTime.now().plusYears(1), null, null, null, true)} => "one year ago."</p>
+   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, null, null, new Period().withDays(1), true)} => "one hour ago."</p>
+   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, Locale.getDefault(), DateTimeZone.getDefault(), new Period().withMinutes(10), true)} => {@code DateTime.now().minusHours(1).toString(DateTimeFormat.forStyle("-M"))}</p>
+   *
+   * @param then An instant. Return "" if could not convert {@code DateTime} Object.
+   * @param reference the moment of a starting point ( {@code ReadableInstant} and {@code Long} specifiable ). Use {@code DateTime.now()} as a start point if {@code reference} is null.
+   * @param locale the language for Localization ( {@code String} and {@code Locale} specifiable ). Use ROOT if {@code locale} is null.
+   * @param zone timezone for Localization ( {@code String}, {@code TimeZone}, and {@code DateTimeZone} specifiable ). Use UTC if {@code zone} is null.
+   * @param limit if the moment is in the specified period, return prettified String ( {@code Period} and {@code Interval} specifiable ). Prettify all, if null.
+   * @param printStackTrace just for debugging.
+   * @return the prettified String if the period includes specified moment. In other situation, return Stringified date-time.
+   */
+  private static String prettify(final Object then, final Object reference, final Locale locale, final DateTimeZone zone, final Object limit, boolean printStackTrace) {
+    if (then == null) return StringUtils.EMPTY;
+    try {
+      DateTime temporary = new DateTime(then, DateTimeZone.UTC);
+      DateTime ref = new DateTime(reference, DateTimeZone.UTC);
+      Interval limitter = null;
+      if (limit != null && limit instanceof Interval) limitter = ((Interval) limit).toInterval();
+      if (limit != null && limit instanceof Period) limitter = getInterval(ref, (Period) limit);
+      if (limitter == null) limitter = getInterval(ref, new Period(temporary, ref));
+      if (limitter.contains(temporary)) return doPrettify(temporary, ref, locale);
+
+      return temporary.withZone(zone).toString(DateTimeFormat.forStyle(isToday(temporary, zone) ? "-M" : "MS").withLocale(locale == null ? Locale.ROOT : locale));
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+
+    return StringUtils.EMPTY;
+  }
+
+  /**
    * <p>
    * Shorthand for {@code prettify(then, null, locale, zone, null)}.
    * </p>
@@ -158,41 +191,6 @@ public class JodaPrettifier {
    */
   protected static String prettify(final Object then, final Object reference, final Object locale, final Object zone, final Object limit) {
     return prettify(then, reference, Localizer.newLocale(locale), Localizer.newDateTimeZone(zone), limit, false);
-  }
-
-  /**
-   * Return the prettified String if the period includes specified moment.
-   *
-   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, null, null, null, true)} => "one hour ago."</p>
-   * <p>{@code JodaPrettifier.prettify(DateTime.now(), DateTime.now().plusYears(1), null, null, null, true)} => "one year ago."</p>
-   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, null, null, new Period().withDays(1), true)} => "one hour ago."</p>
-   * <p>{@code JodaPrettifier.prettify(DateTime.now().minusHours(1), null, Locale.getDefault(), DateTimeZone.getDefault(), new Period().withMinutes(10), true)} => {@code DateTime.now().minusHours(1).toString(DateTimeFormat.forStyle("-M"))}</p>
-   *
-   * @param then An instant. Return "" if could not convert {@code DateTime} Object.
-   * @param reference the moment of a starting point ( {@code ReadableInstant} and {@code Long} specifiable ). Use {@code DateTime.now()} as a start point if {@code reference} is null.
-   * @param locale the language for Localization ( {@code String} and {@code Locale} specifiable ). Use ROOT if {@code locale} is null.
-   * @param zone timezone for Localization ( {@code String}, {@code TimeZone}, and {@code DateTimeZone} specifiable ). Use UTC if {@code zone} is null.
-   * @param limit if the moment is in the specified period, return prettified String ( {@code Period} and {@code Interval} specifiable ). Prettify all, if null.
-   * @param printStackTrace just for debugging.
-   * @return the prettified String if the period includes specified moment. In other situation, return Stringified date-time.
-   */
-  private static String prettify(final Object then, final Object reference, final Locale locale, final DateTimeZone zone, final Object limit, boolean printStackTrace) {
-    if (then == null) return StringUtils.EMPTY;
-    try {
-      DateTime temporary = new DateTime(then, DateTimeZone.UTC);
-      DateTime ref = new DateTime(reference, DateTimeZone.UTC);
-      Interval limitter = null;
-      if (limit != null && limit instanceof Interval) limitter = ((Interval) limit).toInterval();
-      if (limit != null && limit instanceof Period) limitter = getInterval(ref, (Period) limit);
-      if (limitter == null) limitter = getInterval(ref, new Period(temporary, ref));
-      if (limitter.contains(temporary)) return doPrettify(temporary, ref, locale);
-
-      return temporary.withZone(zone).toString(DateTimeFormat.forStyle(isToday(temporary, zone) ? "-M" : "MS").withLocale(locale == null ? Locale.ROOT : locale));
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-
-    return StringUtils.EMPTY;
   }
 
   /**
@@ -425,4 +423,9 @@ public class JodaPrettifier {
   public static String prettifyWithZone(final Object instant, final Object reference, final Object zone) {
     return prettify(instant, reference, null, zone, null);
   }
+
+  /**
+   * {@code JodaPrettifier} instances should NOT be constructed in standard programming.
+   */
+  protected JodaPrettifier() {}
 }

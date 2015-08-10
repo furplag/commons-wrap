@@ -15,19 +15,29 @@
  */
 package jp.furplag.util.commons;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import jp.furplag.util.Jsonifier;
+
 import org.apache.commons.lang3.Range;
 
+/**
+ * utilities for number classes.
+ *
+ * @see org.apache.commons.lang3.math.NumberUtils
+ * @author furplag.jp
+ *
+ */
 public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
-  protected NumberUtils() {
-    super();
-  }
-
+  /**
+   * Number type detector
+   *
+   */
   protected static enum Numbers {
     BigDecimal(7), BigInteger(4), Byte(0), Double(6), Float(5), Integer(2), Long(3), Short(1);
 
@@ -63,7 +73,7 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
     private final boolean hasFloat;
 
-    private final boolean hasPrimitive;
+    private final Class<?> primitive;
 
     private final int id;
 
@@ -74,45 +84,52 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     private Numbers(final int id) {
       this.id = id;
       hasFloat = id > 4;
-      hasPrimitive = id != 4 && id != 7;
       switch (id) {
         case 0:
           clazz = Byte.class;
+          primitive = byte.class;
           min = java.lang.Byte.MIN_VALUE;
           max = java.lang.Byte.MAX_VALUE;
           break;
         case 1:
           clazz = Short.class;
+          primitive = short.class;
           min = java.lang.Short.MIN_VALUE;
           max = java.lang.Short.MAX_VALUE;
           break;
         case 2:
           clazz = Integer.class;
+          primitive = int.class;
           min = java.lang.Integer.MIN_VALUE;
           max = java.lang.Integer.MAX_VALUE;
           break;
         case 3:
           clazz = Long.class;
+          primitive = long.class;
           min = java.lang.Long.MIN_VALUE;
           max = java.lang.Long.MAX_VALUE;
           break;
         case 4:
           clazz = BigInteger.class;
+          primitive = null;
           min = java.math.BigInteger.valueOf(java.lang.Long.MIN_VALUE);
           max = java.math.BigInteger.valueOf(java.lang.Long.MAX_VALUE);
           break;
         case 5:
           clazz = Float.class;
+          primitive = float.class;
           min = java.lang.Float.MAX_VALUE * -1f;
           max = java.lang.Float.MAX_VALUE;
           break;
         case 6:
           clazz = Double.class;
+          primitive = double.class;
           min = java.lang.Double.MAX_VALUE * -1d;
           max = java.lang.Double.MAX_VALUE;
           break;
         case 7:
           clazz = BigDecimal.class;
+          primitive = null;
           min = java.math.BigDecimal.valueOf(java.lang.Long.MIN_VALUE);
           max = java.math.BigDecimal.valueOf(java.lang.Long.MAX_VALUE);
           break;
@@ -123,6 +140,10 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
     boolean contains(final Number n) {
       return Range.between(materialize(min, BigDecimal.class), materialize(max, BigDecimal.class)).contains(materialize(n, BigDecimal.class));
+    }
+
+    boolean hasPrimitive() {
+      return primitive != null;
     }
 
     boolean is(final Class<? extends Number> clazz) {
@@ -140,6 +161,12 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     return materialize(materialize(n, BigDecimal.class).add(materialize(augend, BigDecimal.class)), n);
   }
 
+  /**
+   * calculate without casting.
+   *
+   * @param n
+   * @return
+   */
   public static <T extends Number> T ceil(final T n) {
     return ceil(n, null);
   }
@@ -150,6 +177,12 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     return materialize(materialize(n, BigDecimal.class).setScale(scale == null ? 0 : scale, RoundingMode.CEILING), n);
   }
 
+  /**
+   * normalize the angle out the range of 0&deg; to 360&deg;.
+   *
+   * @param n
+   * @return
+   */
   public static <T extends Number> T circulate(final T n) {
     return add(remainder(n, 360), signum(n) < 0 ? 360 : 0);
   }
@@ -197,13 +230,11 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
   }
 
   /**
-   * <p>
-   * Casting between Number Object.
-   * </p>
+   * casting between number classes.
    *
-   * @param n the number, may be null
-   * @param clazz class Object of destenation.
-   * @return the Number Object of specified class.
+   * @param n the number, may be null.
+   * @param dest the instance of destination class.
+   * @return
    */
   @SuppressWarnings("unchecked")
   public static <E extends Number, T extends Number> T materialize(final E n, final T dest) {
@@ -211,9 +242,19 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
   }
 
   /**
-   * <p>
-   * Casting between Number Object.
-   * </p>
+   * casting between array of number.
+   *
+   * @param array the array of number, may be null.
+   * @param clazz destination class.
+   * @return the array of specified number class.
+   */
+  @SuppressWarnings("unchecked")
+  public static <E extends Number, T extends Number> T[] materialize(E[] array, Class<T> clazz) {
+    return (T[])Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), Array.newInstance(clazz, 0).getClass());
+  }
+
+  /**
+   * casting between number classes.
    *
    * @param n the number, may be null
    * @param clazz class Object of destenation.
@@ -226,9 +267,9 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     Numbers src = Numbers.get(n);
     Numbers dest = Numbers.get(clazz);
     if (src.id == dest.id) return (T) n;
-    if (!src.hasPrimitive && !dest.hasPrimitive) return (T) (dest.hasFloat ? new BigDecimal(n.toString()) : new BigInteger(n.toString()));
-    if (!dest.hasPrimitive && dest.hasFloat) return (T) new BigDecimal(n.toString());
-    if (!dest.hasPrimitive && !dest.hasFloat) return (T) BigInteger.valueOf(new BigDecimal(n.toString()).longValue());
+    if (!src.hasPrimitive() && !dest.hasPrimitive()) return (T) (dest.hasFloat ? new BigDecimal(n.toString()) : new BigInteger(n.toString()));
+    if (!dest.hasPrimitive() && dest.hasFloat) return (T) new BigDecimal(n.toString());
+    if (!dest.hasPrimitive() && !dest.hasFloat) return (T) BigInteger.valueOf(new BigDecimal(n.toString()).longValue());
     if (!dest.contains(n)) return (T) (signum(n) < 0 ? dest.min : dest.max);
     switch (dest) {
       case Byte:
@@ -249,9 +290,18 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
   }
 
   /**
-   * <p>
-   * Casting itself for Generic method return value.
-   * </p>
+   * casting between Array of Number Object.
+   *
+   * @param array
+   * @param clazz
+   * @return
+   */
+  public static <T extends Number> T[] materialize(String[] array, Class<T> clazz) {
+    return materialize(Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), Double[].class), clazz);
+  }
+
+  /**
+   * casting itself for Generic method return value.
    *
    * @param n the number, may be null
    * @return an instance of Number Object.
@@ -267,6 +317,14 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     return materialize(materialize(n, BigDecimal.class).multiply(materialize(multiplicand, BigDecimal.class)), n);
   }
 
+  /**
+   * normalize the number out the range of {@code min} to {@code max}.
+   *
+   * @param n
+   * @param min
+   * @param max
+   * @return
+   */
   public static <T extends Number> T normalize(final T n, final Number min, final Number max) {
     if (n == null) return null;
     BigDecimal nM = materialize(n, BigDecimal.class);
@@ -356,9 +414,7 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
   }
 
   /**
-   * <p>
-   * Returns the signum function of the argument; zero if the argument is zero, 1.0 if the argument is greater than zero, -1.0 if the argument is less than zero.
-   * </p>
+   * returns the signum function of the argument; zero if the argument is zero, 1.0 if the argument is greater than zero, -1.0 if the argument is less than zero.
    *
    * @see {@code java.lang.Math.signum}
    */
@@ -380,9 +436,43 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     return materialize(materialize(radian, BigDecimal.class).multiply(divide(new BigDecimal(180d), new BigDecimal(Math.PI))), radian);
   }
 
+  public static <E extends Number> byte[] tobyteArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), byte[].class);
+  }
+
+  public static <E extends Number> double[] todoubleArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), double[].class);
+  }
+
+  public static <E extends Number> float[] tofloatArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), float[].class);
+  }
+
+  public static <E extends Number> int[] tointArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), int[].class);
+  }
+
+  public static <E extends Number> long[] tolongArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), long[].class);
+  }
+
+  /**
+   * calculate the radian represented by the angle.
+   *
+   * @param angle
+   * @return
+   */
   public static <T extends Number> T toRadian(final T angle) {
     if (angle == null) return null;
 
     return materialize(materialize(angle, BigDecimal.class).multiply(divide(new BigDecimal(Math.PI), new BigDecimal(180d))), angle);
+  }
+
+  public static <E extends Number> short[] toshortArray(E[] array) {
+    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), short[].class);
+  }
+
+  protected NumberUtils() {
+    super();
   }
 }

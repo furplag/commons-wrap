@@ -13,43 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ *
+ */
 package jp.furplag.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import jp.furplag.util.commons.StringUtils;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Maps;
 
 public class JsonifierTest {
 
+  /**
+   * @throws java.lang.Exception
+   */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {}
 
+  /**
+   * @throws java.lang.Exception
+   */
   @Before
   public void setUp() throws Exception {}
 
+  /**
+   * @throws java.lang.Exception
+   */
+  @After
+  public void tearDown() throws Exception {}
+
   @Test
-  public final void testStringify() throws IOException {
+  public final void testStringify() {
     Map<String, Object> test = Maps.newTreeMap();
     test.put("a", "A");
     test.put("b", 1);
     test.put("c", new String[]{"C", "c"});
-    assertEquals("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", Jsonifier.stringify(test));
+    try {
+      assertEquals("null", Jsonifier.stringify(null));
+      assertEquals("\"\"", Jsonifier.stringify(StringUtils.EMPTY));
+      assertEquals("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", Jsonifier.stringify(test));
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   @Test
-  public final void testStringifyLazyObject() {
+  public final void testStringifyLazy() {
     Map<String, Object> test = null;
     assertEquals("", Jsonifier.stringifyLazy(test));
     test = Maps.newTreeMap();
@@ -61,22 +84,27 @@ public class JsonifierTest {
   }
 
   @Test
-  public final void testParseStringClassOfT() throws JsonParseException, JsonMappingException, IOException {
+  public final void testParseStringClassOfT() {
   }
 
   @Test
-  public final void testParseStringTypeReferenceOfT() throws JsonParseException, JsonMappingException, JsonGenerationException, IOException {
-    assertEquals(null, Jsonifier.parse(null, new TypeReference<Map<String, Object>>(){}));
-    assertEquals(null, Jsonifier.parse("", new TypeReference<Map<String, Object>>(){}));
-    Map<String, Object> test = Maps.newTreeMap();
-    test.put("a", "A");
-    test.put("b", 1);
-    test.put("c", Arrays.asList(new String[]{"C", "c"}));
-    assertEquals(test, Jsonifier.parse(Jsonifier.stringify(test), new TypeReference<Map<String, Object>>(){}));
+  public final void testParseStringTypeReferenceOfT() {
   }
 
   @Test
   public final void testParseLazyStringClassOfT() {
+    assertEquals(null, Jsonifier.parseLazy(null, int.class));
+    assertEquals(null, Jsonifier.parseLazy("", int.class));
+    assertEquals(null, Jsonifier.parseLazy("{NaN}", int.class));
+    assertEquals(null, Jsonifier.parseLazy("[\"a\"]", int.class));
+    assertEquals(null, Jsonifier.parseLazy("", new TypeReference<Map<String, Object>>(){}));
+    assertArrayEquals(new boolean[]{}, Jsonifier.parseLazy("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", new TypeReference<boolean[]>(){}));
+
+    int[] ints = {1, 2, 3};
+    assertArrayEquals(ints, Jsonifier.parseLazy(Jsonifier.stringifyLazy(ints), int[].class));
+
+    Integer[] integers = {1, 2, 3};
+    assertArrayEquals(integers, Jsonifier.parseLazy(Jsonifier.stringifyLazy(ints), Integer[].class));
   }
 
   @Test
@@ -84,9 +112,15 @@ public class JsonifierTest {
     Map<String, Object> test = Maps.newTreeMap();
     assertEquals(null, Jsonifier.parseLazy(null, new TypeReference<Map<String, Object>>(){}));
     assertEquals(null, Jsonifier.parseLazy("", new TypeReference<Map<String, Object>>(){}));
+    assertArrayEquals(new boolean[]{}, Jsonifier.parseLazy("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", new TypeReference<boolean[]>(){}));
+
     test.put("a", "A");
     test.put("b", 1);
     test.put("c", Arrays.asList(new String[]{"C", "c"}));
     assertEquals(test, Jsonifier.parseLazy(Jsonifier.stringifyLazy(test), new TypeReference<Map<String, Object>>(){}));
+
+    int[] ints = {1, 2, 3};
+    assertArrayEquals(ints, Jsonifier.parseLazy(Jsonifier.stringifyLazy(ints), new TypeReference<int[]>(){}));
   }
+
 }

@@ -16,10 +16,7 @@
 package jp.furplag.util;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.util.Arrays;
 
 import jp.furplag.util.commons.StringUtils;
 
@@ -29,19 +26,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
- * Converter between Object and JSON.
- * @author furplag.jp
+ * converter between Object and JSON.
  *
- *
+ * @author furplag
  */
 public class Jsonifier {
 
   /**
+   * ignore unknown field mapping error.
+   *
    * @see com.fasterxml.jackson.databind.ObjectMapper
    */
   protected static ObjectMapper mapper = new ObjectMapper();
@@ -50,22 +45,141 @@ public class Jsonifier {
   }
 
   /**
-   * <p>
-   * {@code StringUtils} instances should NOT be constructed in standard programming.
-   * </p>
+   * create the instance of specified class represented by the JSON String. Throw exceptions if convert has failed.
+   *
+   * @param str JSON String.
+   * @param clazz destination class.
+   * @return the instance of specified class.
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   * @see com.fasterxml.jackson.databind.ObjectMapper.readValue(String, Class<T>)
    */
-  protected Jsonifier() {}
+  public static <T> T parse(final String str, final Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
+    if (StringUtils.isSimilarToBlank(str)) return null;
+    if (clazz == null) return null;
 
+    return mapper.readValue(str, clazz);
+  }
+
+  /**
+   * create the instance of specified class represented by the JSON String. Throw exceptions if convert has failed.
+   *
+   * @param str JSON String.
+   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
+   * @return the instance of specified class.
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   * @see com.fasterxml.jackson.databind.ObjectMapper.readValue(String, TypeReference)
+   */
+  public static <T> T parse(final String str, final TypeReference<T> typeRef) throws JsonParseException, JsonMappingException, IOException {
+    if (StringUtils.isSimilarToBlank(str)) return null;
+    if (typeRef == null) return null;
+
+    return mapper.readValue(str, typeRef);
+  }
+
+  /**
+   * create the instance of specified class represented by the JSON String. Return empty instance if convert has failed.
+   *
+   * @param str JSON String.
+   * @param clazz destination class.
+   * @return the instance of specified class.
+   */
+  public static <T> T parseLazy(final String str, final Class<T> clazz) {
+    return parseLazy(str, clazz, false);
+  }
+
+  /**
+   * create the instance of specified class represented by the JSON String. Return empty instance if convert has failed.
+   *
+   * @param str JSON String.
+   * @param clazz destination class.
+   * @param printStackTrace just for debugging.
+   * @return the instance of specified class.
+   */
+  private static <T> T parseLazy(final String str, final Class<T> clazz, boolean printStackTrace) {
+    try {
+      return parse(str, clazz);
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+    try {
+      return GenericUtils.newInstance(clazz);
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+
+    return null;
+  }
+
+  /**
+   * create the instance of specified class represented by the JSON String. Return empty instance if convert has failed.
+   *
+   * @param str JSON String.
+   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
+   * @return the instance of specified class.
+   */
+  public static <T> T parseLazy(final String str, final TypeReference<T> typeRef) {
+    return parseLazy(str, typeRef, false);
+  }
+
+  /**
+   * create the instance of specified class represented by the JSON String. Return empty instance if convert has failed.
+   *
+   * @param str JSON String.
+   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
+   * @param printStackTrace just for debugging.
+   * @return the instance of specified class.
+   */
+  private static <T> T parseLazy(final String str, final TypeReference<T> typeRef, boolean printStackTrace) {
+    try {
+      return parse(str, typeRef);
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+    try {
+      return GenericUtils.newInstance(typeRef);
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+
+    return null;
+  }
+
+  /**
+   * stringify specified object. Throw exceptions if stringify has failed.
+   *
+   * @param obj
+   * @return JSON String.
+   * @throws JsonGenerationException
+   * @throws JsonMappingException
+   * @throws IOException
+   */
   public static String stringify(final Object obj) throws JsonGenerationException, JsonMappingException, IOException {
     return mapper.writeValueAsString(obj);
   }
 
-
+  /**
+   * stringify specified object. Return empty String if stringify has failed.
+   *
+   * @param obj
+   * @return JSON String.
+   */
   public static String stringifyLazy(final Object obj) {
     return stringifyLazy(obj, false);
   }
 
-  public static String stringifyLazy(final Object obj, final boolean printStackTrace) {
+  /**
+   * stringify specified object. Return empty String if stringify has failed.
+   *
+   * @param obj
+   * @param printStackTrace just for debugging.
+   * @return JSON String.
+   * @see com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(Object)
+   */
+  private static String stringifyLazy(final Object obj, final boolean printStackTrace) {
     if (obj == null) return StringUtils.EMPTY;
     try {
       return stringify(obj);
@@ -76,75 +190,14 @@ public class Jsonifier {
     return StringUtils.EMPTY;
   }
 
-  public static <T> T parse(final String str, final Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
-    return StringUtils.isSimilarToBlank(str) ? null : mapper.readValue(str, clazz);
+  public static void main(String[] args) throws ClassNotFoundException {
+    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", int[].class)));
+    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", new TypeReference<int[]>(){})));
+    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", Integer[].class)));
   }
 
-  public static <T> T parse(final String str, final TypeReference<T> ref) throws JsonParseException, JsonMappingException, IOException {
-    if (StringUtils.isSimilarToBlank(str)) return null;
-    return mapper.readValue(str, ref);
-  }
-
-  public static <T> T parseLazy(final String str, final Class<T> clazz) {
-    return parseLazy(str, clazz, false);
-  }
-
-  public static <T> T parseLazy(final String str, final Class<T> clazz, boolean printStackTrace) {
-    try {
-      return parse(str, clazz);
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-    try {
-      return clazz.newInstance();
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-
-    return null;
-  }
-
-  public static <T> T parseLazy(final String str, final TypeReference<T> valueTypeRef) {
-    return parseLazy(str, valueTypeRef, false);
-  }
-
-  public static <T> T parseLazy(final String str, final TypeReference<T> valueTypeRef, boolean printStackTrace) {
-    try {
-      return parse(str, valueTypeRef);
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-    try {
-      return fallBack(valueTypeRef.getType());
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-
-    return null;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T fallBack(final Type type) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    if (type == null) return null;
-    if (type instanceof GenericArrayType) {
-      return (T) newArray(((GenericArrayType) type).getGenericComponentType().toString().replaceAll("(^class\\s)|\\s+|(<.*>)", ""));
-    } else if (type instanceof ParameterizedType) {
-      Type rawType = ((ParameterizedType) type).getRawType();
-      if (((Class<?>) rawType).isInterface() && "List".equalsIgnoreCase(((Class<?>) rawType).getSimpleName())) return (T) Lists.newArrayList();
-      if (((Class<?>) rawType).isInterface() && "Map".equalsIgnoreCase(((Class<?>) rawType).getSimpleName())) return (T) Maps.newHashMap();
-      if (((Class<?>) rawType).isInterface() && "Set".equalsIgnoreCase(((Class<?>) rawType).getSimpleName())) return (T) Sets.newHashSet();
-      return (T) ((Class<?>) rawType).newInstance();
-    } else if (type instanceof Class) {
-      return (T) ((Class<?>) type).newInstance();
-    }
-
-    return null;
-  }
-
-  private static Object newArray(final String inference) throws IllegalArgumentException, NegativeArraySizeException, ClassNotFoundException {
-    if (StringUtils.isSimilarToBlank(inference)) return null;
-    String className = inference.replaceAll("\\[", "");
-
-    return Array.newInstance(Class.forName(className.replaceAll("\\]", "")), new int[inference.length() - className.length() + 1]);
-  }
+  /**
+   * {@code Jsonifier} instances should NOT be constructed in standard programming.
+   */
+  protected Jsonifier() {}
 }

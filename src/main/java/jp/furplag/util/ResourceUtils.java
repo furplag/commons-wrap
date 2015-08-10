@@ -23,65 +23,169 @@ import java.util.ResourceBundle;
 
 import jp.furplag.util.commons.StringUtils;
 
+/**
+ * utilities for MessageResources.
+ *
+ * @author furplag
+ *
+ */
 public class ResourceUtils {
 
   protected static final String FORMAT_PATTERN = "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}";
 
-  protected ResourceUtils() {}
-
+  /**
+   * shorthand for {@code get(baseName, key, null, null, Locale.getDefault(), false)}
+   *
+   * @param baseName
+   * @param key
+   * @return
+   */
   public static String get(final String baseName, final String key) {
     return get(baseName, key, null, null, Locale.getDefault(), false);
   }
 
-  public static String get(final String baseName, final String key, final Object arguments) {
-    return get(baseName, key, arguments, null, Locale.getDefault());
-  }
-
-  public static String get(final String baseName, final String key, final Object[] arguments) {
-    return get(baseName, key, arguments, null, Locale.getDefault(), false);
-  }
-
-  public static String get(final String baseName, final String key, final String defaultString) {
-    return get(baseName, key, null, defaultString, Locale.getDefault(), false);
-  }
-
+  /**
+   * shorthand for {code get(baseName, key, null, null, locale, false)}
+   *
+   * @param baseName
+   * @param key
+   * @param locale
+   * @return
+   */
   public static String get(final String baseName, final String key, final Locale locale) {
     return get(baseName, key, null, null, locale, false);
   }
 
-  public static String get(final String baseName, final String key, final Object arguments, final String defaultString) {
-    return get(baseName, key, arguments, defaultString, Locale.getDefault());
+  /**
+   * shorthand for {@code get(baseName, key, arguments, null, Locale.getDefault())}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object arguments) {
+    return get(baseName, key, arguments, null, Locale.getDefault());
   }
 
-  public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString) {
-    return get(baseName, key, arguments, defaultString, Locale.getDefault(), false);
-  }
-
+  /**
+   * shorthandd for {@code get(baseName, key, arguments, null, locale)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param locale
+   * @return
+   */
   public static String get(final String baseName, final String key, final Object arguments, final Locale locale) {
     return get(baseName, key, arguments, null, locale);
   }
 
-  public static String get(final String baseName, final String key, final Object[] arguments, final Locale locale) {
-    return get(baseName, key, arguments, null, Locale.getDefault(), false);
+  /**
+   * shorthand for {@code get(baseName, key, arguments, defaultString, Locale.getDefault())}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object arguments, final String defaultString) {
+    return get(baseName, key, arguments, defaultString, Locale.getDefault());
   }
 
-  public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final String locale) {
-    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
-  }
-
+  /**
+   * shorthand for {@code get(baseName, key, args, defaultString, locale, false)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @param locale
+   * @return
+   */
   public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final Locale locale) {
     Object[] args = arguments == null ? new Object[]{} : (arguments instanceof String) ? Arrays.asList(StringUtils.split(arguments.toString(), ",")).toArray(new Object[]{}) : new Object[]{arguments};
     return get(baseName, key, args, defaultString, locale, false);
   }
 
-  public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final String locale) {
+  /**
+   * shorthand for {@code get(baseName, key, arguments, defaultString, Localizer.newLocale(locale))}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @param locale
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final String locale) {
     return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
   }
 
+  /**
+   * shorthand for {@code get(baseName, key, arguments, null, Locale.getDefault(), false)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object[] arguments) {
+    return get(baseName, key, arguments, null, Locale.getDefault(), false);
+  }
+
+  /**
+   * shorthand for {@code get(baseName, key, arguments, null, Locale.getDefault(), false)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param locale
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object[] arguments, final Locale locale) {
+    return get(baseName, key, arguments, null, Locale.getDefault(), false);
+  }
+
+  /**
+   * shorthand for {@code get(baseName, key, arguments, defaultString, Locale.getDefault(), false)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @return
+   */
+  public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString) {
+    return get(baseName, key, arguments, defaultString, Locale.getDefault(), false);
+  }
+
+  /**
+   * shorthand for {@code get(baseName, key, arguments, defaultString, locale, false)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @param locale
+   * @return
+   */
   public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final Locale locale) {
     return get(baseName, key, arguments, defaultString, locale, false);
   }
 
+  /**
+   * shorthand for {@code java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(String, Locale), Object...)}
+   *
+   * @param baseName
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @param locale
+   * @param printStackTrace
+   * @return
+   */
   private static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final Locale locale, final boolean printStackTrace) {
     try {
       return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(ResourceBundle.getBundle(StringUtils.defaultString(baseName), locale == null ? Locale.ROOT : locale).getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
@@ -92,8 +196,12 @@ public class ResourceUtils {
     return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
   }
 
-  public static String getWithLocale(final String baseName, final String key, final String locale) {
-    return get(baseName, key, null, null, locale);
+  public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final String locale) {
+    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
+  }
+
+  public static String get(final String baseName, final String key, final String defaultString) {
+    return get(baseName, key, null, defaultString, Locale.getDefault(), false);
   }
 
   public static String getWithLocale(final String baseName, final String key, final Object arguments, final String locale) {
@@ -103,4 +211,13 @@ public class ResourceUtils {
   public static String getWithLocale(final String baseName, final String key, final Object[] arguments, final String locale) {
     return get(baseName, key, arguments, null, locale);
   }
+
+  public static String getWithLocale(final String baseName, final String key, final String locale) {
+    return get(baseName, key, null, null, locale);
+  }
+
+  /**
+   * {@code ResourceUtils} instances should NOT be constructed in standard programming.
+   */
+  protected ResourceUtils() {}
 }
