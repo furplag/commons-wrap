@@ -16,7 +16,6 @@
 package jp.furplag.util;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import jp.furplag.util.commons.StringUtils;
 
@@ -56,8 +55,7 @@ public class Jsonifier {
    * @see com.fasterxml.jackson.databind.ObjectMapper.readValue(String, Class<T>)
    */
   public static <T> T parse(final String str, final Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
-    if (StringUtils.isSimilarToBlank(str)) return null;
-    if (clazz == null) return null;
+    if (str == null) return GenericUtils.isPrimitive(clazz) ? mapper.readValue("", clazz) : null;
 
     return mapper.readValue(str, clazz);
   }
@@ -74,8 +72,7 @@ public class Jsonifier {
    * @see com.fasterxml.jackson.databind.ObjectMapper.readValue(String, TypeReference)
    */
   public static <T> T parse(final String str, final TypeReference<T> typeRef) throws JsonParseException, JsonMappingException, IOException {
-    if (StringUtils.isSimilarToBlank(str)) return null;
-    if (typeRef == null) return null;
+    if (str == null || typeRef == null) return null;
 
     return mapper.readValue(str, typeRef);
   }
@@ -105,13 +102,8 @@ public class Jsonifier {
     } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
-    try {
-      return GenericUtils.newInstance(clazz);
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
 
-    return null;
+    return GenericUtils.newInstance(clazz, printStackTrace);
   }
 
   /**
@@ -134,18 +126,14 @@ public class Jsonifier {
    * @return the instance of specified class.
    */
   private static <T> T parseLazy(final String str, final TypeReference<T> typeRef, boolean printStackTrace) {
+    if (typeRef == null) return null;
     try {
       return parse(str, typeRef);
     } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
-    try {
-      return GenericUtils.newInstance(typeRef);
-    } catch (Exception e) {
-      if (printStackTrace) e.printStackTrace();
-    }
 
-    return null;
+    return GenericUtils.newInstance(typeRef, printStackTrace);
   }
 
   /**
@@ -188,12 +176,6 @@ public class Jsonifier {
     }
 
     return StringUtils.EMPTY;
-  }
-
-  public static void main(String[] args) throws ClassNotFoundException {
-    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", int[].class)));
-    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", new TypeReference<int[]>(){})));
-    System.out.println(Arrays.toString(Jsonifier.parseLazy("[null,-1,1]", Integer[].class)));
   }
 
   /**

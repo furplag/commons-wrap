@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.util;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,32 +54,22 @@ public class GenericUtilsTest {
   public void tearDown() throws Exception {}
 
   @Test
-  public final void testNewArrayTypeReferenceOfT() {
-    assertNull(GenericUtils.newArray(null));
-    assertArrayEquals(new int[]{}, GenericUtils.newArray(new TypeReference<int[]>(){}));
-    assertArrayEquals(new Double[]{}, GenericUtils.newArray(new TypeReference<Double[]>(){}));
-    assertArrayEquals(new String[]{}, GenericUtils.newArray(new TypeReference<String[]>(){}));
-    assertArrayEquals(new Object[][]{}, GenericUtils.newArray(new TypeReference<Object[][]>(){}));
+  public final void testNewInstanceClassOfT() {
+    Class<?> clazz = null;
+    assertNull(GenericUtils.newInstance(clazz));
+    assertTrue(0L == GenericUtils.newInstance(long.class));
+    assertFalse(GenericUtils.newInstance(boolean.class));
+    assertEquals(null, GenericUtils.newInstance(Long.class));
+    assertArrayEquals(new String[]{}, GenericUtils.newInstance(String[].class));
+    assertArrayEquals(new int[][]{}, GenericUtils.newInstance(int[][].class));
   }
 
   @Test
-  public final void testNewArrayTypeReferenceOfTInteger() {
-    assertNull(GenericUtils.newArray(null, null));
-    assertNull(GenericUtils.newArray(null, 1024));
-    assertNull(GenericUtils.newArray(new TypeReference<boolean[]>(){}, -1));
-    assertArrayEquals(new Double[]{}, GenericUtils.newArray(new TypeReference<Double[]>(){}, null));
-    assertArrayEquals(new String[]{}, GenericUtils.newArray(new TypeReference<String[]>(){}, 0));
-    assertArrayEquals(new int[]{0, 0, 0}, GenericUtils.newArray(new TypeReference<int[]>(){}, 3));
-    assertArrayEquals(new Object[][]{null, null, null, null}, GenericUtils.newArray(new TypeReference<Object[][]>(){}, 4));
-  }
-
-  @Test
-  public final void testNewInstance() {
-//    Class<?> clazz = null;
-//    assertNull(GenericUtils.newInstance(clazz));
-//    TypeReference<Map<String, List<Object>>> ref = null;
-//    assertNull(GenericUtils.newInstance(ref));
-//    assertEquals(new String(), GenericUtils.newInstance(new TypeReference<String>(){}));
+  public final void testNewInstanceTypeReferenceOfT() {
+    TypeReference<Map<String, List<Object>>> ref = null;
+    assertNull(GenericUtils.newInstance(ref));
+    assertEquals(new String(), GenericUtils.newInstance(new TypeReference<String>(){}));
+    assertArrayEquals(new double[]{}, GenericUtils.newInstance(new TypeReference<double[]>(){}), 0);
     assertArrayEquals(new Integer[]{}, GenericUtils.newInstance(new TypeReference<Integer[]>(){}));
     Map<String, List<Object>> map = new HashMap<String, List<Object>>();
     assertEquals(map, GenericUtils.newInstance(new TypeReference<Map<String, List<Object>>>(){}));

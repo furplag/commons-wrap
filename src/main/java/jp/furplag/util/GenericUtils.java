@@ -19,13 +19,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
 
 import jp.furplag.util.commons.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -38,82 +35,8 @@ import com.google.common.collect.Sets;
  */
 public class GenericUtils {
 
-  private static final Map<String, Class<?>> PRIMITIVES;
-
-  static {
-    Map<String, Class<?>> primitives = new HashMap<String, Class<?>>();
-    primitives.put("boolean", boolean.class);
-    primitives.put("byte", byte.class);
-    primitives.put("char", char.class);
-    primitives.put("double", double.class);
-    primitives.put("float", float.class);
-    primitives.put("int", int.class);
-    primitives.put("short", short.class);
-    primitives.put("void", void.class);
-
-    PRIMITIVES = ImmutableMap.copyOf(primitives);
-  }
-
-  private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPERS;
-
-  static {
-    Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
-    primitives.put(boolean.class, Boolean.class);
-    primitives.put(byte.class, Byte.class);
-    primitives.put(char.class, Character.class);
-    primitives.put(double.class, Double.class);
-    primitives.put(float.class, Float.class);
-    primitives.put(int.class, Integer.class);
-    primitives.put(short.class, Short.class);
-    primitives.put(void.class, Void.class);
-
-    PRIMITIVE_WRAPPERS = ImmutableMap.copyOf(primitives);
-  }
-
-  /**
-   * shorthand for {@code newArray(typeRef, null)}.
-   *
-   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
-   * @return empty instance of specified class.
-   */
-  public static <T> T newArray(TypeReference<T> typeRef) {
-    return newArray(typeRef, 0);
-  }
-
-  /**
-   * substitute for {@code Array.newInstance}.
-   *
-   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
-   * @param length initialize array length if the type is {@code Array}.
-   * @param printStackTrace just for debugging.
-   * @return empty instance of specified class.
-   */
-  @SuppressWarnings("unchecked")
-  private static <T> T newArray(TypeReference<T> typeRef, boolean printStackTrace, int... length) {
-    if (typeRef == null) return null;
-    if (!(typeRef.getType() instanceof GenericArrayType)) return null;
-    try {
-      String typeInference = StringUtils.truncateAll(((GenericArrayType) typeRef.getType()).getGenericComponentType().toString(), "(^class\\s)|\\s+|(<.*>)|\\[|\\]");
-
-      return (T) Array.newInstance(PRIMITIVES.containsKey(typeInference) ? PRIMITIVES.get(typeInference) : Class.forName(typeInference), length == null || length.length < 1 ? new int[]{0} : length);
-    } catch (NegativeArraySizeException e) {
-      if (printStackTrace) e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      if (printStackTrace) e.printStackTrace();
-    }
-
-    return null;
-  }
-
-  /**
-   * shorthand for {@code newArray(typeRef, false, length)}.
-   *
-   * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
-   * @param length initialize array length if the type is {@code Array}.
-   * @return empty instance of specified class.
-   */
-  public static <T> T newArray(TypeReference<T> typeRef, int... length) {
-    return newArray(typeRef, false, length);
+  public static boolean isPrimitive(Class<?> clazz) {
+    return clazz != null && !clazz.isArray() && StringUtils.containsAny(clazz.getName(), "boolean,byte,char,double,float,int,long".split(","));
   }
 
   /**
@@ -133,16 +56,16 @@ public class GenericUtils {
    * @param printStackTrace just for debugging.
    * @return empty instance of specified class.
    */
-  @SuppressWarnings("unchecked")
-  private static <T> T newInstance(Class<T> clazz, boolean printStackTrace) {
+  public static <T> T newInstance(Class<T> clazz, boolean printStackTrace) {
     if (clazz == null) return null;
     try {
-      if (PRIMITIVE_WRAPPERS.containsKey(clazz)) return (T) PRIMITIVE_WRAPPERS.get(clazz).newInstance();
+      if (clazz.isArray()) return Jsonifier.parse("[]", clazz);
+      if (StringUtils.containsAny(clazz.getName(), "byte,double,float,int,long".split(","))) return Jsonifier.parse("0", clazz);
+      if ("boolean".equals(clazz.getName())) return Jsonifier.parse("false", clazz);
+      if ("char".equals(clazz.getName())) return Jsonifier.parse("", clazz);
 
       return clazz.newInstance();
-    } catch (InstantiationException e) {
-      if (printStackTrace) e.printStackTrace();
-    } catch (IllegalAccessException e) {
+    } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
 
@@ -156,7 +79,7 @@ public class GenericUtils {
    * @return empty instance of specified class.
    */
   public static <T> T newInstance(TypeReference<T> typeRef) {
-    return newInstance(typeRef, true);
+    return newInstance(typeRef, false);
   }
 
   /**
@@ -164,15 +87,14 @@ public class GenericUtils {
    *
    * @param typeRef {@code com.fasterxml.jackson.core.type.TypeReference<T>}.
    * @param printStackTrace just for debugging.
-   * @param length initialize array length if the type is {@code Array}.
    * @return empty instance of specified class.
    */
   @SuppressWarnings("unchecked")
-  private static <T> T newInstance(TypeReference<T> typeRef, boolean printStackTrace, int... length) {
+  public static <T> T newInstance(TypeReference<T> typeRef, boolean printStackTrace) {
+    if (typeRef == null) return null;
     try {
-      if (typeRef == null) return null;
       Type type = typeRef.getType();
-      if (type instanceof GenericArrayType) return newArray(typeRef, printStackTrace, length == null ? new int[]{0} : length);
+      if (type instanceof GenericArrayType) return Jsonifier.parse("[]", typeRef);
       if (type instanceof ParameterizedType) {
         Type rawType = ((ParameterizedType) type).getRawType();
         Class<?> clazz = (Class<?>) rawType;
@@ -182,12 +104,21 @@ public class GenericUtils {
 
         return ((Class<T>) rawType).newInstance();
       }
+      String inference = StringUtils.truncateAll(type.toString(), "(^class\\s)|\\s+|(<.*>)|\\[|\\]");
+      if ("Z".equals(inference)) return (T) newInstance(boolean[].class, printStackTrace);
+      if ("B".equals(inference)) return (T) newInstance(byte[].class, printStackTrace);
+      if ("C".equals(inference)) return (T) newInstance(char[].class, printStackTrace);
+      if ("D".equals(inference)) return (T) newInstance(double[].class, printStackTrace);
+      if ("F".equals(inference)) return (T) newInstance(float[].class, printStackTrace);
+      if ("I".equals(inference)) return (T) newInstance(int[].class, printStackTrace);
+      if ("J".equals(inference)) return (T) newInstance(long[].class, printStackTrace);
+      if (inference.startsWith("L")) {
+        inference = StringUtils.truncateAll(StringUtils.truncateAll(inference, "^L"), ";$");
+
+        return (T) Array.newInstance(Class.forName(inference), 0);
+      }
       if (type instanceof Class) return ((Class<T>) type).newInstance();
-    } catch (IllegalArgumentException e) {
-      if (printStackTrace) e.printStackTrace();
-    } catch (InstantiationException e) {
-      if (printStackTrace) e.printStackTrace();
-    } catch (IllegalAccessException e) {
+    } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
 

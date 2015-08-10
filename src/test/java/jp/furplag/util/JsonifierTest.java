@@ -18,9 +18,7 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -93,12 +91,11 @@ public class JsonifierTest {
 
   @Test
   public final void testParseLazyStringClassOfT() {
-    assertEquals(null, Jsonifier.parseLazy(null, int.class));
-    assertEquals(null, Jsonifier.parseLazy("", int.class));
-    assertEquals(null, Jsonifier.parseLazy("{NaN}", int.class));
-    assertEquals(null, Jsonifier.parseLazy("[\"a\"]", int.class));
-    assertEquals(null, Jsonifier.parseLazy("", new TypeReference<Map<String, Object>>(){}));
-    assertArrayEquals(new boolean[]{}, Jsonifier.parseLazy("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", new TypeReference<boolean[]>(){}));
+    assertTrue(0 == Jsonifier.parseLazy(null, int.class));
+    assertTrue(0 == Jsonifier.parseLazy("", int.class));
+    assertTrue(0 == Jsonifier.parseLazy("{NaN}", int.class));
+    assertTrue(0 == Jsonifier.parseLazy("[\"a\"]", int.class));
+    assertArrayEquals(new int[]{}, Jsonifier.parseLazy("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", int[].class));
 
     int[] ints = {1, 2, 3};
     assertArrayEquals(ints, Jsonifier.parseLazy(Jsonifier.stringifyLazy(ints), int[].class));
@@ -109,9 +106,10 @@ public class JsonifierTest {
 
   @Test
   public final void testParseLazyStringTypeReferenceOfT() {
-    Map<String, Object> test = Maps.newTreeMap();
+    Map<String, Object> test = null;
     assertEquals(null, Jsonifier.parseLazy(null, new TypeReference<Map<String, Object>>(){}));
-    assertEquals(null, Jsonifier.parseLazy("", new TypeReference<Map<String, Object>>(){}));
+    test = Maps.newTreeMap();
+    assertEquals(test, Jsonifier.parseLazy("", new TypeReference<Map<String, Object>>(){}));
     assertArrayEquals(new boolean[]{}, Jsonifier.parseLazy("{\"a\":\"A\",\"b\":1,\"c\":[\"C\",\"c\"]}", new TypeReference<boolean[]>(){}));
 
     test.put("a", "A");

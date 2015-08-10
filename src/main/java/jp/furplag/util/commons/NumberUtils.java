@@ -328,7 +328,7 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
   public static <T extends Number> T normalize(final T n, final Number min, final Number max) {
     if (n == null) return null;
     BigDecimal nM = materialize(n, BigDecimal.class);
-    BigDecimal minM = materialize(min == null ? 0 : min, BigDecimal.class);
+    BigDecimal minM = materialize(min == null ? BigDecimal.ZERO : min, BigDecimal.class);
     BigDecimal maxM = materialize(max == null ? nM : max, BigDecimal.class);
     if (maxM.compareTo(minM) < 1) throw new IllegalArgumentException("min must be less than max.");
     BigDecimal range = minM.abs().add(maxM.abs());
@@ -361,7 +361,7 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
     Numbers type = Numbers.get(clazz);
     if (type.is(clazz)) return materialize(n, clazz);
     if (!type.contains(n) && !fallback) throw new NumberFormatException("could not convert \"" + n.toString() + "\" to \"" + clazz.getName() + "\"");
-    if (!type.contains(n)) return materialize(limitation ? signum(n) < 0 ? type.min : type.max : 0, clazz);
+    if (!type.contains(n)) return materialize(limitation ? signum(n) < 0 ? type.min : type.max : BigDecimal.ZERO, clazz);
 
     return materialize(n, clazz);
   }

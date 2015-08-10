@@ -35,7 +35,7 @@
   </properties>
   <repositories>
     <repository>
-      <id>webinspector</id>
+      <id>prettytime</id>
       <url>https://raw.github.com/furplag/prettytime/mvn-repo/</url>
       <snapshots>
         <enabled>true</enabled>
