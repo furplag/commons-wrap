@@ -149,7 +149,7 @@ public class JodaPrettifier {
       if (limitter == null) limitter = getInterval(ref, new Period(temporary, ref));
       if (limitter.contains(temporary)) return doPrettify(temporary, ref, locale);
 
-      return temporary.withZone(zone).toString(DateTimeFormat.forStyle(isToday(temporary.withZone(zone)) ? "-M" : "MS").withLocale(locale == null ? Locale.ROOT : locale));
+      return temporary.withZone(zone).toString(DateTimeFormat.forStyle(isToday(temporary) ? "-M" : "MS").withLocale(locale == null ? Locale.ROOT : locale));
     } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
