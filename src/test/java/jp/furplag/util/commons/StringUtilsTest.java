@@ -188,13 +188,6 @@ public class StringUtilsTest {
   }
 
   @Test
-  public void testEmptyToSafely() {
-    assertEquals("", StringUtils.emptyToSafely(null));
-    assertEquals("", StringUtils.emptyToSafely(new String()));
-    assertEquals("not empty", StringUtils.emptyToSafely("not empty"));
-  }
-
-  @Test
   public void testNormalizeString() {
     assertEquals(null, StringUtils.normalize(null));
     assertEquals(null, StringUtils.normalize("  \r\n　  \n"));

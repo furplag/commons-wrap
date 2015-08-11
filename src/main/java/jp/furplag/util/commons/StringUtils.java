@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.util.commons;
 
 import java.nio.charset.Charset;
@@ -24,28 +25,23 @@ import java.util.regex.Pattern;
 
 /**
  * @see org.apache.commons.lang3.StringUtils
- * @author furplag.jp
- *
+ * @author furplag
  */
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   /**
-   * <p>
-   * {@code StringUtils} instances should NOT be constructed in standard programming.
-   * </p>
+   * StringUtils instances should NOT be constructed in standard programming.
    */
   protected StringUtils() {
     super();
   }
 
   /**
-   * <p>
    * Shorthand for {@code java.lang.String.replaceAll(regex, "")}.
-   * </p>
    *
-   * @param str the String, may be null
-   * @param regex the regular expression to which this string is to be matched
-   * @return The resulting <tt>String</tt>
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
    */
   public static String truncateAll(final String str, final String regex) {
     if (isSimilarToBlank(str)) return str;
@@ -55,13 +51,11 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
    * Shorthand for {@code java.lang.String.replaceFirst(regex, "")}.
-   * </p>
    *
-   * @param str the String, may be null
-   * @param regex the regular expression to which this string is to be matched
-   * @return The resulting <tt>String</tt>
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
    */
   public static String truncateFirst(final String str, final String regex) {
     if (isSimilarToBlank(str)) return str;
@@ -71,58 +65,48 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Shorthand for {@code jp.furplag.util.commons.StringUtils.replaceLast(str, regex, "")}.
-   * </p>
+   * Shorthand for {@code replaceLast(str, regex, "")}.
    *
-   * @param str the String, may be null
-   * @param regex the regular expression to which this string is to be matched
-   * @return The resulting <tt>String</tt>
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
    */
   public static String truncateLast(final String str, final String regex) {
     return replaceLast(str, regex, EMPTY);
   }
 
   /**
-   * <p>
-   * {@code java.lang.String.replaceAll} against null.
-   * </p>
+   * java.lang.String.replaceAll against null.
    *
-   * @param str
-   * @param regex
-   * @param replacement
-   * @return The resulting <tt>String</tt>
-   * @see java.lang.String.replaceAll
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @param replacement the string to be substituted for each match.
+   * @return the resulting String.
    */
   public static String replaceAll(final String str, final String regex, final String replacement) {
     if (isSimilarToBlank(str)) return str;
     if (isBlank(regex)) return str;
 
-    return str.replaceAll(regex, emptyToSafely(replacement));
+    return str.replaceAll(regex, defaultString(replacement));
   }
 
   /**
-   * <p>
-   * Replaces the last substring of this string that matches the given regular expression with the given replacement.
-   * </p>
+   * replaces the last substring of this string that matches the given regular expression with the given replacement.
    *
-   * @param str
-   * @param regex the regular expression to which this string is to be matched
-   * @param replacement the string to be substituted for each match
-   * @return The resulting <tt>String</tt>
-   * @see java.util.regex.Pattern
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @param replacement the string to be substituted for each match.
+   * @return the resulting String.
    */
   public static String replaceLast(final String str, final String regex, final String replacement) {
     if (isSimilarToBlank(str)) return str;
     if (isBlank(regex)) return str;
 
-    return defaultString(str).replaceFirst("(?s)(.*)" + emptyToSafely(regex), "$1" + emptyToSafely(replacement));
+    return str.replaceFirst("(?s)(.*)" + defaultString(regex), "$1" + defaultString(replacement));
   }
 
   /**
-   * <p>
-   * Returns the length of this string.
-   * </p>
+   * returns the length of this string.
    * <p>
    * The length is equal to the number of Unicode code points in the string.
    * </p>
@@ -137,6 +121,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.length("𩸽")   = 1 :"𩸽" U+29E3D(&#171581)
    * </pre>
    *
+   * @param str the string, may be null.
    * @return the length of the sequence of characters represented by this object.
    */
   public static int length(final String str) {
@@ -144,9 +129,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Returns the byte length of this string.
-   * </p>
+   * returns the byte length of this string.
    *
    * <pre>
    * StringUtils.byteLength(null)   = 0
@@ -158,6 +141,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.byteLength("𩸽")   = 4 :"𩸽" U+29E3D(&#171581)
    * </pre>
    *
+   * @param str the string, may be null.
    * @return the byte length of this string.
    */
   public static int byteLength(final String str) {
@@ -171,10 +155,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the character at index <code>endIndex - 1</code>. Thus the
-   * length of the substring is <code>endIndex-beginIndex</code>.
-   * </p>
+   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the character at index <code>endIndex - 1</code>. Thus the length of the substring is <code>endIndex-beginIndex</code>.
    *
    * <pre>
    * StringUtils.substringUCL(null, *, *)    = ""
@@ -188,10 +169,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.substringUCL("abc", -4, 2)  = "ab"
    * </pre>
    *
-   * @param str the String to get the substring from, may be null
-   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters
-   * @param endIndex the position to end at (exclusive), negative means count back from the end of the String by this many characters
-   * @return substring from start position to end position, "" if null String input
+   * @param str the string to get the substring from, may be null.
+   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
+   * @param endIndex the position to end at (exclusive), negative means count back from the end of the String by this many characters.
+   * @return substring from start position to end position, return empty if null.
    */
   public static String substringUCL(final String str, final int beginIndex, final int endIndex) {
     int[] codePoints = getCodePoints(defaultString(str));
@@ -211,9 +192,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the string at <code>byteLen</code> bytes length.
-   * </p>
+   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the string at <code>byteLen</code> bytes length.
    *
    * <pre>
    * StringUtils.substringUBL(null, *, *)    = ""
@@ -227,10 +206,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.substringUBL("abc", -4, 2)  = "ab"
    * </pre>
    *
-   * @param str the String to get the substring from, may be null
-   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters
-   * @param byteLen
-   * @return substring from start position to end position, "" if null String input
+   * @param str the string to get the substring from, may be null.
+   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
+   * @param byteLen the byte length to end at (exclusive), return empty if negative.
+   * @return substring from start position to end position, return empty if null.
    * @exception IllegalArgumentException if a character that is more than <code>byteLen</code> bytes in the string is present
    */
   public static String substringUBL(final String str, final int beginIndex, final int byteLen) {
@@ -256,9 +235,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Return Array of strings that can fit in the specified number of bytes in the <code>byteLen</code>.
-   * </p>
+   * return Array of strings that can fit in the specified number of bytes in the <code>byteLen</code>.
    *
    * <pre>
    * StringUtils.splitUBL(null, *)    = []
@@ -270,8 +247,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.splitUBL("abc", -1)  = []
    * </pre>
    *
-   * @param str
-   * @param byteLen
+   * @param str the string, may be null.
+   * @param byteLen the byte length to end at (exclusive), return empty if negative.
    * @return array of strings that can fit in the specified number of bytes in the <code>byteLen</code>
    */
   public static String[] splitUBL(final String str, final int byteLen) {
@@ -285,15 +262,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
       next = length(splits.get(splits.size() - 1));
     }
 
-    return splits.toArray(new String[]{});
+    return splits.toArray(new String[] {});
   }
 
   /**
-   * <p>
-   * Return the Array of Unicode code points in the string.
-   * </p>
+   * return the Array of Unicode code points in the string.
    *
-   * @param str
+   * @param str the string, may be null.
    * @return Array of codepoints.
    */
   public static int[] getCodePoints(final String str) {
@@ -309,10 +284,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Joins the elements of the provided array into a single String containing the provided list of elements.
-   * </p>
-   *
+   * joins the elements of the provided array into a single String containing the provided list of elements.
    * <p>
    * No delimiter is added before or after the list. Null objects or empty strings within the array are represented by empty strings.
    * </p>
@@ -327,9 +299,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.joinExcludesBlank(["a", null, "", "b"], ';')  = "a;b"
    * </pre>
    *
-   * @param array the array of values to join together, may be null
-   * @param separator the separator character to use
-   * @return the joined String, {@code null} if null array input
+   * @param array the array of values to join together, may be null.
+   * @param separator the separator character to use.
+   * @return the joined string, return null if null array input.
    */
   public static String joinExcludesBlank(final Object[] array, final String separator) {
     if (array == null) return null;
@@ -337,10 +309,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Joins the elements of the provided array into a single String containing the provided list of elements.
-   * </p>
-   *
+   * joins the elements of the provided array into a single String containing the provided list of elements.
    * <p>
    * No delimiter is added before or after the list. Null objects or empty strings within the array are represented by empty strings.
    * </p>
@@ -356,17 +325,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.joinExcludesBlank(["a", "", null, "c"], ';', 1, 4)  = "c"
    * </pre>
    *
-   * @param array the array of values to join together, may be null
-   * @param separator the separator character to use
-   * @param startIndex the first index to start joining from. It is
-   *          an error to pass in an end index past the end of the array
-   * @param endIndex the index to stop joining from (exclusive). It is
-   *          an error to pass in an end index past the end of the array
-   * @return the joined String, {@code null} if null array input
+   * @param array the array of values to join together, may be null.
+   * @param separator the separator character to use.
+   * @param startIndex the first index to start joining from. It is an error to pass in an end index past the end of the array.
+   * @param endIndex the index to stop joining from (exclusive). It is an error to pass in an end index past the end of the array.
+   * @return the joined string, return null if null array input.
    */
   public static String joinExcludesBlank(final Object[] array, final String separator, final int beginIndex, final int endIndex) {
     if (array == null) return null;
-    int end = (endIndex < 0 ? array.length: 0) + endIndex;
+    int end = (endIndex < 0 ? array.length : 0) + endIndex;
     if (end > array.length) end = array.length;
     if (end < 0) end = 0;
     int begin = (beginIndex < 0 ? array.length : 0) + beginIndex;
@@ -387,9 +354,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * <p>
-   * Checks if a String is whitespace, full-width space, empty (""), newline ((CR)?LF) or null.
-   * </p>
+   * checks if a String is whitespace, full-width space, empty (""), newline ((CR)?LF) or null.
    *
    * <pre>
    * StringUtils.isSimilarToBlank(null)      = true
@@ -399,29 +364,16 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.isSimilarToBlank("  bob  ") = false
    * </pre>
    *
-   * @param str the String to check, may be null
-   * @return {@code true} if the String is null, empty, newline or whitespace
+   * @param str the string to check, may be null.
+   * @return return true if the String is null, empty, newline or whitespace.
    */
   public static boolean isSimilarToBlank(final String str) {
     return defaultString(str).replaceAll("[\\s\\r\\n\\t　]", EMPTY).length() == 0;
   }
 
   /**
-   * <p>
-   * Return empty String ("") if a String is whitespace, full-width space, empty (""), newline ((CR)?LF) or null.
-   * </p>
+   * shorthand for {@code normalize(str, false)}.
    *
-   * @param str the String to check, may be null
-   * @return {@code true} if the String is null, whitespace, full-width space, empty, newline or whitespace.
-   */
-  public static String emptyToSafely(final String str) {
-    return isSimilarToBlank(str) ? EMPTY : str;
-  }
-
-  /**
-   * Normalize a String.
-   *
-   * @see normalize(String, {@code false} )
    * @param str the String, may be null
    * @return normalized string.
    */
@@ -430,7 +382,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Normalize a String.
+   * normalize a String.
    *
    * <pre>
    * StringUtils.normalize(null, false) = null
@@ -442,8 +394,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.normalize("あいうえおｶｷｸｹｺ", {@code true}/{@code false}) = "あいうえおカキクケコ"
    * </pre>
    *
-   * @param str the String, may be null
-   * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace
+   * @param str the string, may be null.
+   * @param emptyToBlank if true, return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace
    * @return normalized string.
    */
   public static String normalize(final String str, final boolean emptyToBlank) {
@@ -453,7 +405,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Normalize a String with Japanese Kana Convert.
+   * normalize a String with Japanese Kana Convert.
    *
    * <pre>
    * StringUtils.normalizeKana(null, {@code true}/{@code false}) = null
@@ -462,7 +414,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * StringUtils.normalize("abcｄｅｆ123４５６あいうｶｷｸ", false) = "abcdef123456あいうかきく"
    * </pre>
    *
-   * @param str the String, may be null
+   * @param str the string, may be null.
    * @param hiraToKata {@code true} then Hiragana to Katakana.
    * @return Normalize a String with Japanese Kana Convert.
    */
@@ -473,16 +425,16 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < temporary.length(); i++) {
       String s = temporary.substring(i, i + 1);
-      sb.append(pattern.matcher(s).matches() ? new String(new int[]{s.codePointAt(0) + (hiraToKata ? 96 : -96)}, 0, 1) : s);
+      sb.append(pattern.matcher(s).matches() ? new String(new int[] { s.codePointAt(0) + (hiraToKata ? 96 : -96) }, 0, 1) : s);
     }
 
     return sb.toString();
   }
 
   /**
-   * Returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
+   * returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
    *
-   * @param str the String, may be null
+   * @param str the string, may be null.
    * @return the string leading and trailing whitespace and full-width space omitted.
    */
   public static String trim(final String str) {
@@ -490,10 +442,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
+   * returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
    *
-   * @param str the String, may be null
-   * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace
+   * @param str the string, may be null.
+   * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace.
    * @return the string leading and trailing whitespace and full-width space omitted.
    */
   public static String trim(final String str, final boolean emptyToBlank) {
@@ -503,9 +455,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Returns a copy of the lower case string, with whitespace and full-width space omitted.
+   * returns a copy of the lower case string, with whitespace and full-width space omitted.
    *
-   * @param str the String, may be null
+   * @param str the string, may be null.
    * @return the lower case string, with whitespace and full-width space omitted.
    */
   public static String flatten(final String str) {

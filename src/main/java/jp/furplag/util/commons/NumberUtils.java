@@ -13,168 +13,331 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.util.commons;
 
-import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
-import jp.furplag.util.Jsonifier;
-
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.lang3.Range;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * utilities for number classes.
  *
  * @see org.apache.commons.lang3.math.NumberUtils
  * @author furplag.jp
- *
  */
-public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
+public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
 
   /**
-   * Number type detector
+   * internal Number detector.
    *
+   * @author furplag
    */
-  protected static enum Numbers {
-    BigDecimal(7), BigInteger(4), Byte(0), Double(6), Float(5), Integer(2), Long(3), Short(1);
+  private static final class NumberObject {
 
-    static Numbers get(final Class<? extends Number> clazz) {
-      if (clazz == null) return null;
-      if (clazz.equals(Byte.class)) return Numbers.Byte;
-      if (clazz.equals(Short.class)) return Numbers.Short;
-      if (clazz.equals(Integer.class)) return Numbers.Integer;
-      if (clazz.equals(Long.class)) return Numbers.Long;
-      if (clazz.equals(BigInteger.class)) return Numbers.BigInteger;
-      if (clazz.equals(Float.class)) return Numbers.Float;
-      if (clazz.equals(Double.class)) return Numbers.Double;
-      if (clazz.equals(BigDecimal.class)) return Numbers.BigDecimal;
+    private static final Map<Class<?>, NumberObject> NUMBEROBJECTS = initialize();
 
-      return null;
+    public static <T extends Number> NumberObject of(final Class<T> type) {
+      if (!NUMBEROBJECTS.containsKey(type == null ? Null.class : type)) NUMBEROBJECTS.put(type == null ? Null.class : type, new NumberObject(type));
+
+      return NUMBEROBJECTS.get(type == null ? Null.class : type);
     }
 
-    static Numbers get(final Number n) {
-      if (n == null) return null;
-      if (n instanceof Byte) return Numbers.Byte;
-      if (n instanceof Short) return Numbers.Short;
-      if (n instanceof Integer) return Numbers.Integer;
-      if (n instanceof Long) return Numbers.Long;
-      if (n instanceof BigInteger) return Numbers.BigInteger;
-      if (n instanceof Float) return Numbers.Float;
-      if (n instanceof Double) return Numbers.Double;
-      if (n instanceof BigDecimal) return Numbers.BigDecimal;
-
-      return null;
+    public static <T extends Number> NumberObject of(final T n) {
+      return of(n != null ? n.getClass() : null);
     }
 
-    private final Class<? extends Number> clazz;
+    private static Map<Class<?>, NumberObject> initialize() {
+      return new HashMap<Class<?>, NumberObject>();
+    }
 
-    private final boolean hasFloat;
+    private final boolean fractionable;
 
-    private final Class<?> primitive;
+    /** maximum */
+    private final BigDecimal max;
 
-    private final int id;
+    /** minimum */
+    private final BigDecimal min;
 
-    private final Number max;
+    /** initial value */
+    private final Number origin;
 
-    private final Number min;
+    /** origin type */
+    private final Class<?> type;
 
-    private Numbers(final int id) {
-      this.id = id;
-      hasFloat = id > 4;
-      switch (id) {
-        case 0:
-          clazz = Byte.class;
-          primitive = byte.class;
-          min = java.lang.Byte.MIN_VALUE;
-          max = java.lang.Byte.MAX_VALUE;
-          break;
-        case 1:
-          clazz = Short.class;
-          primitive = short.class;
-          min = java.lang.Short.MIN_VALUE;
-          max = java.lang.Short.MAX_VALUE;
-          break;
-        case 2:
-          clazz = Integer.class;
-          primitive = int.class;
-          min = java.lang.Integer.MIN_VALUE;
-          max = java.lang.Integer.MAX_VALUE;
-          break;
-        case 3:
-          clazz = Long.class;
-          primitive = long.class;
-          min = java.lang.Long.MIN_VALUE;
-          max = java.lang.Long.MAX_VALUE;
-          break;
-        case 4:
-          clazz = BigInteger.class;
-          primitive = null;
-          min = java.math.BigInteger.valueOf(java.lang.Long.MIN_VALUE);
-          max = java.math.BigInteger.valueOf(java.lang.Long.MAX_VALUE);
-          break;
-        case 5:
-          clazz = Float.class;
-          primitive = float.class;
-          min = java.lang.Float.MAX_VALUE * -1f;
-          max = java.lang.Float.MAX_VALUE;
-          break;
-        case 6:
-          clazz = Double.class;
-          primitive = double.class;
-          min = java.lang.Double.MAX_VALUE * -1d;
-          max = java.lang.Double.MAX_VALUE;
-          break;
-        case 7:
-          clazz = BigDecimal.class;
-          primitive = null;
-          min = java.math.BigDecimal.valueOf(java.lang.Long.MIN_VALUE);
-          max = java.math.BigDecimal.valueOf(java.lang.Long.MAX_VALUE);
-          break;
-        default:
-          throw new IllegalArgumentException("\"" + id + "\" is invalid parameter.");
+    /** wrapper type */
+    private final Class<?> wrapper;
+
+    /** zero for return value */
+    private final Number zero;
+
+    private NumberObject(Class<? extends Number> type) {
+      this.type = type == null ? Null.class : type;
+      wrapper = type == null ? this.type : ClassUtils.primitiveToWrapper(type);
+      fractionable = ObjectUtils.isAny(wrapper, BigDecimal.class, Double.class, Float.class);
+      Object max = null;
+      Object min = null;
+      Number zero = null;
+      try {
+        if (ClassUtils.isPrimitiveOrWrapper(type)) {
+          max = wrapper.getField("MAX_VALUE").get(null);
+          zero = (Number) wrapper.getMethod("valueOf", String.class).invoke(null, "0");
+          if (!fractionable) min = wrapper.getField("MIN_VALUE").get(null);
+        } else if (type != null) {
+          zero = (Number) wrapper.getField("ZERO").get(null);
+        }
+      } catch (Exception e) {
+        max = null;
+        zero = null;
       }
+
+      this.max = max == null ? null : new BigDecimal(max.toString());
+      this.min = this.max == null ? null : min == null ? this.max.negate() : new BigDecimal(min.toString());
+      this.zero = zero;
+      origin = this.type.isPrimitive() ? this.zero : null;
     }
 
-    boolean contains(final Number n) {
-      return Range.between(materialize(min, BigDecimal.class), materialize(max, BigDecimal.class)).contains(materialize(n, BigDecimal.class));
+    @Override
+    public boolean equals(Object another) {
+      if (another == null) return false;
+
+      return another instanceof NumberObject && type.equals(((NumberObject) another).type);
     }
 
-    boolean hasPrimitive() {
-      return primitive != null;
+    @Override
+    public String toString() {
+      return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
     }
 
-    boolean is(final Class<? extends Number> clazz) {
-      return clazz == null ? false : clazz.getClass().equals(this.clazz);
+    boolean contains(Number n) {
+      if (Null.class.equals(type)) return n == null;
+      if (n == null) return false;
+      if (isNaN(n)) return false;
+      if (isInfinite(n)) return ObjectUtils.isAny(type, BigDecimal.class, BigInteger.class);
+      if (Float.class.equals(type) && Float.valueOf(n.toString()).isInfinite()) return ObjectUtils.isAny(type, BigDecimal.class, BigInteger.class);
+      if (ClassUtils.isPrimitiveOrWrapper(type)) {
+        if (BigInteger.class.equals(of(n).type)) return Range.between(min.toBigInteger(), max.toBigInteger()).contains((BigInteger) n);
+
+        return Range.between(min, max).contains(new BigDecimal(n.toString()));
+      }
+
+      return isNumber(n.toString());
     }
 
-    boolean is(final Number n) {
-      return n == null ? false : n.getClass().equals(clazz);
+    /**
+     * if true, the number enable to convert to this type. <code>
+     * <pre>
+     * // numeric
+     * of(byte / short / int / long / BigInteger).parsable(12) == true;
+     *
+     * // fraction
+     * of(Float / Double / BigDecimal).parsable(3.45) == true;
+     *
+     * // has no fraction value
+     * of(Integer).parsable(678.0d) == true;
+     *
+     * // null
+     *
+     *
+     * // NaN
+     * of(double).parsable(Double.NaN) == true;
+     * of(float).parsable(Double.NaN) == true;
+     * of(BigDecimal).parsable(Double.NaN) == false;
+     *
+     * // Infinity
+     * of(Double).parsable(Double.POSITIVE_INFINITY) == true;
+     * of(float).parsable(Double.POSITIVE_INFINITY) == true;
+     * of(BigDecimal).parsable(Double.POSITIVE_INFINITY) == false;
+     * </pre>
+     * </code>
+     *
+     * @param n a number, maybe null.
+     * @return if true, the number enable to convert to this type.
+     */
+    boolean parsable(Number n) {
+      Class<?> typeOfN = of(n).wrapper;
+      if (wrapper.equals(typeOfN)) return true;
+      if (Null.class.equals(type)) return n == null;
+      if (n == null) return !type.isPrimitive();
+      if (isNaN(n)) return ObjectUtils.isAny(wrapper, Double.class, Float.class);
+      if (isInfinite(n)) return ObjectUtils.isAny(wrapper, Double.class, Float.class, BigDecimal.class, BigInteger.class);
+      if (Float.class.equals(typeOfN) && ((Float) n).isInfinite()) return ObjectUtils.isAny(wrapper, Double.class, Float.class, BigDecimal.class, BigInteger.class);
+      if (fractionable && !ClassUtils.isPrimitiveWrapper(typeOfN)) return true;
+      if (BigDecimal.class.equals(typeOfN)) {
+        if (!fractionable && ((BigDecimal) n).compareTo(((BigDecimal) n).setScale(0, RoundingMode.DOWN)) != 0) return false;
+        if (min != null && max != null) return Range.between(min, max).contains((BigDecimal) n);
+
+        return BigInteger.class.equals(type);
+      }
+      if (BigInteger.class.equals(typeOfN)) {
+
+        if (min != null && max != null) return Range.between(min.toBigInteger(), max.toBigInteger()).contains((BigInteger) n);
+
+        return BigDecimal.class.equals(type);
+      }
+
+      if (!fractionable && Double.valueOf(n.toString()) != Double.valueOf(n.toString()).longValue()) return false;
+      if (min != null && max != null) return Range.between(min, max).contains(new BigDecimal(n.toString()));
+      if (fractionable) return true;
+
+      return BigInteger.class.equals(type);
+    }
+
+    <T extends Number> T valueOf(Number n) {
+      return valueOf(n, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    <T extends Number> T valueOf(Number n, boolean nonNull) {
+      if (!Number.class.isAssignableFrom(wrapper)) return (T) of(n).origin;
+      if (n == null) return (T) (nonNull ? zero : origin);
+      if (wrapper.equals(of(n).wrapper)) return (T) n;
+      if (isNaN(n)) {
+        if (Double.class.equals(wrapper)) return (T) (Double) Double.NaN;
+        if (Float.class.equals(wrapper)) return (T) (Float) Float.NaN;
+
+        return (T) (nonNull ? zero : origin);
+      }
+      try {
+        Class<?> typeOfN = of(n).wrapper;
+        if (parsable(n)) {
+          if (BigInteger.class.equals(type) && BigDecimal.class.equals(typeOfN)) return (T) ((BigDecimal) n).toBigInteger();
+          if (ClassUtils.isPrimitiveWrapper(wrapper) && ClassUtils.isPrimitiveWrapper(typeOfN)) {
+            if (fractionable) return (T) wrapper.getMethod("valueOf", String.class).invoke(null, n.toString());
+          }
+          BigDecimal nB = isInfinite(n) && ClassUtils.isPrimitiveWrapper(typeOfN) ? Double.class.equals(typeOfN) ? INFINITY_DOUBLE : INFINITY_FLOAT : new BigDecimal(n.toString());
+          if (isInfinite(n, -1)) nB = nB.negate();
+          if (BigDecimal.class.equals(type)) return (T) nB.stripTrailingZeros();
+          if (BigInteger.class.equals(type)) return (T) nB.toBigInteger();
+          if (fractionable) return (T) wrapper.getMethod("valueOf", String.class).invoke(null, nB.stripTrailingZeros().toPlainString());
+
+          return (T) wrapper.getMethod("valueOf", String.class).invoke(null, nB.setScale(0, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
+        }
+        if (contains(n)) {
+          BigDecimal nB = new BigDecimal(n.toString());
+          if (BigInteger.class.equals(type)) return (T) nB.toBigInteger();
+          if (!fractionable) return (T) wrapper.getMethod("valueOf", String.class).invoke(null, nB.setScale(0, RoundingMode.DOWN).stripTrailingZeros().toPlainString());
+
+          return (T) wrapper.getMethod("valueOf", String.class).invoke(null, nB.stripTrailingZeros().toPlainString());
+        }
+        if (Float.class.equals(wrapper) && ObjectUtils.isAny(typeOfN, Double.class, BigDecimal.class, BigInteger.class)) return (T) Float.valueOf(n.toString());
+        if (!ClassUtils.isPrimitiveWrapper(typeOfN)) {
+          if (Double.class.equals(wrapper)) return (T) Double.valueOf(n.toString());
+          if (Float.class.equals(wrapper)) return (T) Float.valueOf(n.toString());
+        }
+        if (fractionable) return (T) wrapper.getMethod("valueOf", String.class).invoke(null, n.toString().startsWith("-") ? min.toPlainString() : max.toPlainString());
+
+        return (T) wrapper.getMethod("valueOf", String.class).invoke(null, n.toString().startsWith("-") ? min.stripTrailingZeros().toPlainString() : max.stripTrailingZeros().toPlainString());
+      } catch (Exception e) {e.printStackTrace();}
+//      } catch (IllegalAccessException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {} catch (NumberFormatException e) {}
+
+      return (T) (nonNull ? zero : origin);
+    }
+
+    @SuppressWarnings("unchecked")
+    <T extends Number> T zero() {
+      return (T) this.zero;
     }
   }
 
-  public static <E extends Number, T extends Number> T add(final T n, final E augend) {
-    if (!(n != null && augend != null)) throw new IllegalArgumentException("numbers must not be null.");
+  /** Double.MAX_VALUE + Math.ulp(Double.MAX_VALUE) / 2. */
+  public static final BigDecimal INFINITY_DOUBLE = toInfinityAndBeyond(Double.class);
 
-    return materialize(materialize(n, BigDecimal.class).add(materialize(augend, BigDecimal.class)), n);
+  /** Float.MAX_VALUE + Math.ulp(Float.MAX_VALUE) / 2. */
+  public static final BigDecimal INFINITY_FLOAT = toInfinityAndBeyond(Float.class);
+
+  /**
+   * {@code (type) (o + augend)}.
+   *
+   * @param o the object. represent the zero if not convertible to number.
+   * @param augend value to be added to 'o'. null means zero.
+   * @param type return type.
+   * @return {@code (type) (o + augend)}.
+   */
+  public static <T extends Number> T add(final Object o, final Number augend, final Class<T> type) {
+    if (type == null) return null;
+    Number n = valueOf(o);
+    if (n == null && augend == null) return NumberObject.of(type).valueOf(null);
+    if (n == null) return NumberObject.of(type == null ? augend.getClass() : type).valueOf(augend);
+    if (augend == null) return NumberObject.of(type == null ? n.getClass() : type).valueOf(n);
+    if ((isNaN(n) && isNaN(augend)) || (isInfinite(n) && isInfinite(augend))) {
+      float f = valueOf(n, float.class) + valueOf(augend, float.class);
+
+      return NumberObject.of(type == null ? n.getClass() : type).valueOf(f);
+    }
+
+    return NumberObject.of(type == null ? n.getClass() : type).valueOf(valueOf(n, BigDecimal.class, true).add(valueOf(augend, BigDecimal.class, true)));
   }
 
   /**
-   * calculate without casting.
+   * {@code o + augend}.
    *
-   * @param n
-   * @return
+   * @param o the object. represent the zero if not convertible to number.
+   * @param augend value to be added to 'o'. null means zero.
+   * @return {@code n + augend}.
    */
-  public static <T extends Number> T ceil(final T n) {
-    return ceil(n, null);
+  public static <T extends Number> T add(final Object o, final T augend) {
+    if (augend == null) return null;
+    if (o != null && Number.class.isAssignableFrom(o.getClass())) return add((Number) o, augend, getClass(augend));
+    Number n = valueOf(o);
+    if (n == null) return NumberObject.of(augend).valueOf(augend);
+    if (Float.class.equals(augend.getClass()) && isInfinite(n)) return add(((Double) n).floatValue(), augend, getClass(augend));
+
+    return add(n, augend, getClass(augend));
   }
 
-  public static <T extends Number> T ceil(final T n, final Integer scale) {
-    if (n == null) throw new IllegalArgumentException("number must not be null.");
+  /**
+   * {@code n + augend}.
+   *
+   * @param n a number, may be null.
+   * @param augend value to be added to 'o'. null means zero.
+   * @return {@code n + augend}.
+   */
+  public static <T extends Number> T add(final T n, final Number augend) {
+    return add(n, augend, getClass(n));
+  }
 
-    return materialize(materialize(n, BigDecimal.class).setScale(scale == null ? 0 : scale, RoundingMode.CEILING), n);
+  /**
+   * {@link java.lang.Math#ceil(double)}.
+   *
+   * @param o the object, number or string.
+   * @return {@code ceil(o)}. Return null if o could not convertible to number.
+   */
+  public static Number ceil(final Object o) {
+    return ceil(o, getClass(valueOf(o)));
+  }
+
+  /**
+   * {@link java.lang.Math#ceil(double)}.
+   *
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return {@code ceil(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T ceil(final Object o, final Class<T> type) {
+    return ceil(o, 0, type);
+
+  }
+
+  /**
+   * {@link java.lang.Math#ceil(double)}.
+   *
+   * @param o the object, number or string.
+   * @param scale scale of fraction.
+   * @param type return type.
+   * @return {@code ceil(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T ceil(final Object o, final Number scale, final Class<T> type) {
+    return setScale(o, scale, RoundingMode.CEILING, type);
   }
 
   /**
@@ -184,295 +347,554 @@ public class NumberUtils extends org.apache.commons.lang3.math.NumberUtils {
    * @return
    */
   public static <T extends Number> T circulate(final T n) {
-    return add(remainder(n, 360), signum(n) < 0 ? 360 : 0);
-  }
-
-  public static <E extends Number, T extends Number> int compareTo(final T n, final E val) {
-    return materialize(n, BigDecimal.class).compareTo(materialize(val, BigDecimal.class));
-  }
-
-  public static <E extends Number> boolean contains(final E n, final Number min, final Number max) {
-    return Range.between(materialize(min, BigDecimal.class), materialize(max, BigDecimal.class)).contains(materialize(n, BigDecimal.class));
-  }
-
-  public static <T extends Number> T cos(final T n) {
-    if (n == null) throw new IllegalArgumentException("number must not be null.");
-
-    return materialize(Math.cos(n.doubleValue()), n);
-  }
-
-  public static <E extends Number, T extends Number> T divide(final T n, final E divider) {
-    return divide(n, divider, null, null);
-  }
-
-  public static <E extends Number, T extends Number> T divide(final T n, final E divider, final Integer scale) {
-    return divide(n, divider, scale, null);
-  }
-
-  public static <E extends Number, T extends Number> T divide(final T n, final E divider, final Integer scale, final RoundingMode mode) {
-    if (!(n != null && divider != null)) throw new IllegalArgumentException("numbers must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).divide(materialize(divider, BigDecimal.class), scale != null ? Math.abs(scale) : 32, mode != null ? mode : RoundingMode.HALF_EVEN), n);
-  }
-
-  public static <E extends Number, T extends Number> T divide(final T n, final E divider, final RoundingMode mode) {
-    return divide(n, divider, null, mode);
-  }
-
-  public static <T extends Number> T floor(final T n) {
-    return floor(n, null);
-  }
-
-  public static <T extends Number> T floor(final T n, final Integer scale) {
-    if (n == null) throw new IllegalArgumentException("number must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).setScale(scale == null ? 0 : scale, RoundingMode.FLOOR), n);
+    return normalize(n, 0, 360);
   }
 
   /**
-   * casting between number classes.
+   * {@code n.compareTo(another)}.
    *
-   * @param n the number, may be null.
-   * @param dest the instance of destination class.
-   * @return
+   * @param o the object, number or string.
+   * @param another the number to be compared.
+   * @return {@code n.compareTo(another)}.
    */
-  @SuppressWarnings("unchecked")
-  public static <E extends Number, T extends Number> T materialize(final E n, final T dest) {
-    return (T) materialize(n, dest.getClass());
+  public static int compareTo(final Number n, final Number another) {
+    if (n == null) return another == null ? 0 : -1;
+    if (another == null) return 1;
+    if (ClassUtils.isPrimitiveOrWrappers(n, another)) return valueOf(n, Double.class).compareTo(valueOf(another, Double.class));
+    if (isNaN(n)) return 1;
+    if (isInfinite(n)) return isInfinite(n, -1) ? -1 : 1;
+    if (isNaN(another)) return -1;
+    if (isInfinite(another)) return isInfinite(another, -1) ? 1 : -1;
+
+    return valueOf(n, BigDecimal.class).compareTo(valueOf(another, BigDecimal.class));
   }
 
   /**
-   * casting between array of number.
+   * fromInclusive &le; o &le; toInclusive.
    *
-   * @param array the array of number, may be null.
-   * @param clazz destination class.
-   * @return the array of specified number class.
+   * @param o the object, number or string.
+   * @param fromInclusive start of range.
+   * @param toInclusive end of range.
+   * @return fromInclusive &le; o &le; toInclusive.
    */
-  @SuppressWarnings("unchecked")
-  public static <E extends Number, T extends Number> T[] materialize(E[] array, Class<T> clazz) {
-    return (T[])Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), Array.newInstance(clazz, 0).getClass());
-  }
-
-  /**
-   * casting between number classes.
-   *
-   * @param n the number, may be null
-   * @param clazz class Object of destenation.
-   * @return the Number Object of specified class.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T extends Number> T materialize(final Number n, final Class<T> clazz) {
-    if (n == null) return null;
-    if (clazz == null) return null;
-    Numbers src = Numbers.get(n);
-    Numbers dest = Numbers.get(clazz);
-    if (src.id == dest.id) return (T) n;
-    if (!src.hasPrimitive() && !dest.hasPrimitive()) return (T) (dest.hasFloat ? new BigDecimal(n.toString()) : new BigInteger(n.toString()));
-    if (!dest.hasPrimitive() && dest.hasFloat) return (T) new BigDecimal(n.toString());
-    if (!dest.hasPrimitive() && !dest.hasFloat) return (T) BigInteger.valueOf(new BigDecimal(n.toString()).longValue());
-    if (!dest.contains(n)) return (T) (signum(n) < 0 ? dest.min : dest.max);
-    switch (dest) {
-      case Byte:
-        return (T) (Byte.valueOf(n.byteValue()));
-      case Short:
-        return (T) (Short.valueOf(n.shortValue()));
-      case Integer:
-        return (T) (Integer.valueOf(n.intValue()));
-      case Long:
-        return (T) (Long.valueOf(n.longValue()));
-      case Float:
-        return (T) (Float.valueOf(n.floatValue()));
-      case Double:
-        return (T) (Double.valueOf(n.doubleValue()));
-      default:
-        return (T) (createNumber(n.toString()));
+  public static boolean contains(final Object o, final Number fromInclusive, final Number toInclusive) {
+    if (fromInclusive == null && toInclusive == null) return false;
+    if (valueOf(o) == null) return false;
+    if (isNaN(o)) return isNaN(fromInclusive) || isNaN(toInclusive);
+    if (BigDecimal.class.equals((fromInclusive == null ? toInclusive : fromInclusive).getClass())) {
+      if (fromInclusive == null) return compareTo(valueOf(o, BigDecimal.class), (BigDecimal) toInclusive) < 1;
+      if (toInclusive == null) return compareTo((BigDecimal) fromInclusive, valueOf(o, BigDecimal.class)) < 1;
     }
+    if (BigInteger.class.equals((fromInclusive == null ? toInclusive : fromInclusive).getClass())) {
+      if (fromInclusive == null) return compareTo(valueOf(o, BigDecimal.class), new BigDecimal((BigInteger) toInclusive)) < 1;
+      if (toInclusive == null) return compareTo(new BigDecimal((BigInteger) fromInclusive), valueOf(o, BigDecimal.class)) < 1;
+    }
+    if (fromInclusive == null) return compareTo(valueOf(o, Double.class), valueOf(toInclusive, Double.class)) < 1;
+    if (toInclusive == null) return compareTo(valueOf(fromInclusive, Double.class), valueOf(o, Double.class)) < 1;
+
+    return Range.between(valueOf(fromInclusive, Double.class), valueOf(toInclusive, Double.class)).contains(valueOf(o, Double.class));
+  }
+
+  public static double cos(long angle) {
+    return cos((Number) angle);
+  }
+
+  public static double cos(Number angle) {
+    return cos(angle, false);
+  }
+
+  public static double cos(Number angle, boolean isRadians) {
+    return Math.cos(isRadians ? valueOf(angle, double.class) : toRadians(angle));
   }
 
   /**
-   * casting between Array of Number Object.
+   * {@code o / divisor}.
    *
-   * @param array
-   * @param clazz
-   * @return
+   * @param o the object, number or string.
+   * @param divisor value by which 'o' is to be divided.
+   * @return {@code n / divisor}.
    */
-  public static <T extends Number> T[] materialize(String[] array, Class<T> clazz) {
-    return materialize(Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), Double[].class), clazz);
+  public static <T extends Number> T divide(final Object o, final Number divisor, final Class<T> type) {
+    return divide(o, divisor, null, null, type);
   }
 
   /**
-   * casting itself for Generic method return value.
+   * {@code n / divisor}.
    *
-   * @param n the number, may be null
-   * @return an instance of Number Object.
+   * @param o the object, number or string.
+   * @param divisor value by which 'o' is to be divided.
+   * @param scale of the {@code n / divisor} quotient to be returned.
+   * @param mode {@link java.math.RoundingMode}.
+   * @param type return number type.
+   * @return {@code (type) (o / divisor)}.
+   */
+  public static <T extends Number> T divide(final Object o, final Number divisor, final Number scale, final RoundingMode mode, final Class<T> type) {
+    if (type == null) return null;
+    Number n = valueOf(o);
+    if (n == null) return setScale(divisor, scale, mode, type);
+    if (divisor == null) return setScale(n, scale, mode, type);
+    if (ClassUtils.isPrimitiveOrWrappers(n, divisor)) {
+      if (scale != null) return setScale(valueOf(n, double.class) / valueOf(divisor, double.class), scale, mode, type);
+
+      return NumberObject.of(type).valueOf(valueOf(n, double.class) / valueOf(divisor, double.class));
+    }
+    if (scale != null) return setScale(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class)), scale, mode, type);
+
+    return NumberObject.of(type).valueOf(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class)));
+  }
+
+  /**
+   * {@code o / divisor}.
+   *
+   * @param o the object, number or string.
+   * @param divisor value by which 'o' is to be divided.
+   * @return {@code n / divisor}.
+   */
+  public static <T extends Number> T divide(final Object o, final T divisor) {
+    return divide(o, divisor, null, null, getClass(divisor));
+  }
+
+  /**
+   * {@code n / divisor}.
+   *
+   * @param n a number, may be null.
+   * @param divisor value by which 'n' is to be divided.
+   * @return {@code n / divisor}.
+   */
+  public static <T extends Number> T divide(final T n, final Number divisor) {
+    return divide(n, divisor, null, null, getClass(n));
+  }
+
+  /**
+   * to round towards zero ({@link java.math.RoundingMode#DOWN}) .
+   *
+   * @param o the object, number or string.
+   * @return value of o without fractional part. Return null if o could not convertible to number.
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Number> T materialize(final T n) {
-    return (T) materialize(n, n.getClass());
-  }
-
-  public static <E extends Number, T extends Number> T multiply(final T n, final E multiplicand) {
-    if (!(n != null && multiplicand != null)) throw new IllegalArgumentException("numbers must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).multiply(materialize(multiplicand, BigDecimal.class)), n);
+  public static <T extends Number> T down(final Object o) {
+    return (T) down(o, getClass(valueOf(o)));
   }
 
   /**
-   * normalize the number out the range of {@code min} to {@code max}.
+   * to round towards zero ({@link java.math.RoundingMode#DOWN}) .
    *
-   * @param n
-   * @param min
-   * @param max
-   * @return
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return value of {@code (type) o} without fractional part. Return null if o could not convertible to number.
    */
-  public static <T extends Number> T normalize(final T n, final Number min, final Number max) {
-    if (n == null) return null;
-    BigDecimal nM = materialize(n, BigDecimal.class);
-    BigDecimal minM = materialize(min == null ? BigDecimal.ZERO : min, BigDecimal.class);
-    BigDecimal maxM = materialize(max == null ? nM : max, BigDecimal.class);
-    if (maxM.compareTo(minM) < 1) throw new IllegalArgumentException("min must be less than max.");
-    BigDecimal range = minM.abs().add(maxM.abs());
-    if (nM.compareTo(minM) == 0) return materialize(minM, n);
-    if (nM.compareTo(maxM) == 0) return materialize(minM.signum() == 0 ? minM : maxM, n);
-    if (Range.between(minM, maxM).contains(nM)) return n;
-    if (nM.compareTo(minM) < 0) return materialize(maxM.add(remainder(nM, range).abs().negate()), n);
-    if (nM.compareTo(maxM) > -1) return materialize(minM.add(remainder(nM, range).abs()), n);
-
-    if (compareTo(range, range.longValue()) == 0) {
-      long integral = nM.abs().longValue();
-      if (nM.compareTo(minM) > -1) return materialize(subtract(nM, integral), n);
-      BigDecimal floating = subtract(nM.abs(), integral);
-      return materialize(add(subtract(subtract(maxM, integral % range.abs().longValue()), floating), minM), n);
-    }
-
-    return materialize(nM.compareTo(minM) < 0 ? maxM.add(remainder(nM, range).abs().negate()).add(minM) : remainder(nM, range).add(minM), n);
+  public static <T extends Number> T down(final Object o, final Class<T> type) {
+    return down(o, 0, type);
   }
 
-  public static <E extends Number, T extends Number> T optimize(final E n, final Class<T> clazz) {
-    return optimize(n, clazz, true, true);
+  /**
+   * to round towards zero ({@link java.math.RoundingMode#DOWN}) .
+   *
+   * @param o the object, number or string.
+   * @param scale scale of fraction.
+   * @param type return type.
+   * @return {@code ((BigDecimal) o).setScale(scale, RoundingMode.DOWN)}.
+   */
+  public static <T extends Number> T down(final Object o, final Number scale, final Class<T> type) {
+    return setScale(o, scale, RoundingMode.DOWN, type);
   }
 
-  public static <E extends Number, T extends Number> T optimize(final E n, final Class<T> clazz, final boolean limitation) {
-    return optimize(n, clazz, limitation, true);
+  /**
+   * {@link java.lang.Math#floor(double)}.
+   *
+   * @param o the object, number or string.
+   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Number> T floor(final Object o) {
+    return (T) floor(o, getClass(valueOf(o)));
   }
 
-  public static <E extends Number, T extends Number> T optimize(final E n, final Class<T> clazz, final boolean limitation, final boolean fallback) {
-    if (!(n != null && clazz != null)) return null;
-    Numbers type = Numbers.get(clazz);
-    if (type.is(clazz)) return materialize(n, clazz);
-    if (!type.contains(n) && !fallback) throw new NumberFormatException("could not convert \"" + n.toString() + "\" to \"" + clazz.getName() + "\"");
-    if (!type.contains(n)) return materialize(limitation ? signum(n) < 0 ? type.min : type.max : BigDecimal.ZERO, clazz);
-
-    return materialize(n, clazz);
+  /**
+   * {@link java.lang.Math#floor(double)}.
+   *
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T floor(final Object o, final Class<T> type) {
+    return floor(o, 0, type);
   }
 
-  public static <T extends Number> T optimize(final String str, final Class<T> clazz) {
-    return optimize(str, clazz, true, true);
+  /**
+   * {@link java.lang.Math#floor(double)}.
+   *
+   * @param o the object, number or string.
+   * @param scale scale of fraction.
+   * @param type return type.
+   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T floor(final Object o, final Number scale, final Class<T> type) {
+    return setScale(o, scale, RoundingMode.FLOOR, type);
   }
 
-  public static <T extends Number> T optimize(final String str, final Class<T> clazz, final boolean limitation) {
-    return optimize(str, clazz, limitation, true);
+  /**
+   * {@link java.lang.Double#isInfinite()}.
+   *
+   * @param n a number, may be null.
+   * @param signum return {@code n == -Infinity} if {@code signum < 0}. if {@code signum > 0}, return {@code n == Infinity}.
+   * @return {@code == Infinity}.
+   */
+  public static boolean isInfinite(final Number n, final int signum) {
+    if (n == null) return false;
+    if (!ObjectUtils.isAny(n, double.class, Double.class, float.class, Float.class)) return false;
+    if (n.toString().equals(signum < 0 ? "-Infinity" : "Infinity")) return true;
+    if (signum > 0 && Double.POSITIVE_INFINITY == Double.valueOf(n.toString())) return true;
+    if (signum < 0 && Double.NEGATIVE_INFINITY == Double.valueOf(n.toString())) return true;
+    if (signum == 0 && Double.valueOf(n.toString()).isInfinite()) return true;
+
+    return false;
   }
 
-  public static <T extends Number> T optimize(final String str, final Class<T> clazz, final boolean limitation, final boolean fallback) {
-    if (StringUtils.isSimilarToBlank(str)) throw new IllegalArgumentException("number must not be empty.");
+  /**
+   * {@link java.lang.Double#isInfinite()}.
+   *
+   * @param o the object, number or string.
+   * @return {@link java.lang.Double#isInfinite()}.
+   */
+  public static boolean isInfinite(Object o) {
+    return isInfinite(valueOf(o), 0);
+  }
+
+  public static boolean isInfiniteOrNaN(Object o) {
+    return isNaN(o) || isInfinite(o);
+  }
+
+  public static boolean isNaN(Number n) {
+    if (ObjectUtils.isAny(n, double.class, Double.class)) return ((Double) n).isNaN();
+
+    return ObjectUtils.isAny(n, float.class, Float.class) && ((Float) n).isNaN();
+  }
+
+  public static boolean isNaN(Object o) {
+    return isNaN(valueOf(o));
+  }
+
+  /**
+   * {@code o * multiplicand}.
+   *
+   * @param o the object, number or string.
+   * @param value to be multiplied by o.
+   * @return {@code o * multiplicand}.
+   */
+  public static <T extends Number> T multiply(final Object o, final T multiplicand) {
+    if (multiplicand == null) return null;
     try {
-      return optimize(createNumber(str), clazz, limitation, fallback);
-    } catch (NumberFormatException e) {
-      if (!fallback) throw e;
-    }
+      return multiply(valueOf(o, getClass(multiplicand), false), multiplicand);
+    } catch (NumberFormatException e) {}
 
-    return materialize(0, clazz);
-  }
-
-  public static <E extends Number, T extends Number> T remainder(final T n, final E divider) {
-    return remainder(n, divider, null);
-  }
-
-  public static <E extends Number, T extends Number> T remainder(final T n, final E divider, final MathContext mc) {
-    if (!(n != null && divider != null)) throw new IllegalArgumentException("numbers must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).remainder(materialize(divider, BigDecimal.class), mc != null ? mc : MathContext.DECIMAL128), n);
-  }
-
-  public static <T extends Number> T round(final T n) {
-    return round(n, null, null);
-  }
-
-  public static <T extends Number> T round(final T n, final Integer scale) {
-    return round(n, scale, null);
-  }
-
-  public static <T extends Number> T round(final T n, final Integer scale, RoundingMode mode) {
-    if (n == null) throw new IllegalArgumentException("number must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).setScale(scale == null ? 0 : scale, mode == null ? RoundingMode.HALF_UP : mode), n);
-  }
-
-  public static <T extends Number> T round(final T n, RoundingMode mode) {
-    return round(n, null, mode);
+    return null;
   }
 
   /**
-   * returns the signum function of the argument; zero if the argument is zero, 1.0 if the argument is greater than zero, -1.0 if the argument is less than zero.
+   * {@code n * multiplicand}.
    *
-   * @see {@code java.lang.Math.signum}
+   * @param n a number, may be null.
+   * @param value to be multiplied by n.
+   * @return {@code n * multiplicand}.
    */
-  private static Double signum(final Number n) {
+  public static <T extends Number> T multiply(final T n, final Number multiplicand) {
+    if (n == null) return n;
+    if (multiplicand == null) return n;
+
+    return valueOf(valueOf(n, BigDecimal.class).multiply(valueOf(multiplicand, BigDecimal.class)), getClass(n));
+  }
+
+  /**
+   * normalize the value if not range in {@code minimum} to {@code maximum}.
+   *
+   * @param n a number, may be null.
+   * @param minimum lower limit of range. null means zero.
+   * @param maximum upper limit of range. null means zero.
+   * @return the value in range between minimum and maximum.
+   */
+  public static <T extends Number> T normalize(final T n, final Number minimum, final Number maximum) {
+    return normalize(n, minimum, maximum, getClass(n));
+
+  }
+
+  /**
+   * normalize the value if not range in {@code minimum} to {@code maximum}.
+   *
+   * @param o the object, number or string.
+   * @param minimum lower limit of range. null means zero.
+   * @param maximum upper limit of range. null means zero.
+   * @param type return type.
+   * @return the value in range between minimum and maximum.
+   */
+  public static <T extends Number> T normalize(final Object o, final Number minimum, final Number maximum, final Class<T> type) {
+    if (type == null) return null;
+    NumberObject nO = NumberObject.of(type);
+    Number n = valueOf(o);
+    if (n == null) return nO.valueOf(null);
+    if (isNaN(n)) return nO.valueOf(n);
+    if (minimum == null && maximum == null) return nO.valueOf(n);
+    if (minimum == null && maximum == null) return nO.valueOf(n);
+    if (compareTo(minimum, maximum) == 0) return nO.valueOf(minimum == null ? maximum == null ? n : maximum : minimum);
+//    if (ClassUtils.isPrimitiveOrWrappers(n, minimum, maximum) || ClassUtils.isPrimitiveOrWrappers(n, (minimum == null ? maximum : minimum))) {
+//      Range<Double> range = Range.between(valueOf(minimum, double.class), valueOf(maximum, double.class));
+//      double nD = valueOf(n, double.class);
+//      if (nD == range.getMaximum()) return nO.valueOf(range.getMinimum());
+//      if (range.contains(nD)) return nO.valueOf(nD);
+//
+//      return nO.valueOf(((nD - range.getMinimum()) % (range.getMaximum() - range.getMinimum())) + (nD > range.getMaximum() ? range.getMinimum() : range.getMaximum()));
+//    }
+    if (isInfinite(minimum) && isInfinite(maximum)) return nO.valueOf(n);
+    Range<BigDecimal> range = Range.between(minimum == null ? BigDecimal.ZERO : valueOf(minimum, BigDecimal.class), maximum == null ? BigDecimal.ZERO : valueOf(maximum, BigDecimal.class));
+    BigDecimal nB = valueOf(n, BigDecimal.class);
+    if (nB.compareTo(range.getMaximum()) == 0) return nO.valueOf(range.getMinimum());
+    if (range.contains(nB)) return nO.valueOf(nB);
+
+    return nO.valueOf((nB.subtract(range.getMinimum()).remainder(range.getMaximum().subtract(range.getMinimum()), MathContext.UNLIMITED)).add(nB.compareTo(range.getMaximum()) > 0 ? range.getMinimum() : range.getMaximum()));
+  }
+
+  public static void main(String[] args) {
+    System.out.println(Long.MAX_VALUE);
+    System.out.println(BigDecimal.valueOf(Long.MAX_VALUE));
+    System.out.println(new BigDecimal(((Long)Long.MAX_VALUE).toString()));
+    System.out.println(new BigDecimal(Long.MAX_VALUE));
+    System.out.println(new BigDecimal(Double.valueOf(Long.MAX_VALUE)));
+    System.out.println();
+    System.out.println(Integer.MAX_VALUE);
+    System.out.println(BigDecimal.valueOf(Integer.MAX_VALUE));
+    System.out.println(new BigDecimal(((Integer)Integer.MAX_VALUE).toString()));
+    System.out.println(new BigDecimal(Integer.MAX_VALUE));
+    System.out.println(new BigDecimal(Double.valueOf(Integer.MAX_VALUE)));
+
+    System.out.println(valueOf(Double.valueOf(Long.MAX_VALUE), BigDecimal.class).toPlainString());
+    System.out.println(normalize(Long.MAX_VALUE, Long.MIN_VALUE, Long.MAX_VALUE).getClass());
+  }
+
+  /**
+   * {@code o % divisor}.
+   *
+   * @param o the object, number or string.
+   * @param divisor value by which 'o' is to be divided.
+   * @return {@code o % divisor}.
+   */
+  public static <T extends Number> T remainder(final Object o, final T divisor) {
+    if (divisor == null) return null;
+    try {
+      return remainder(valueOf(o, getClass(divisor), false), divisor);
+    } catch (NumberFormatException e) {}
+
+    return null;
+  }
+
+  public static <T extends Number> T round(final Object o) {
+    return round(o, 0, null);
+  }
+
+  /**
+   * {@code n % divisor}.
+   *
+   * @param n a number, may be null.
+   * @param divisor value by which 'n' is to be divided.
+   * @param mc {@link java.math.MathContext}.
+   * @return {@code n % divisor}.
+   */
+  public static <T extends Number> T remainder(final T n, final Number divisor) {
+    return remainder(n, divisor, getClass(n));
+  }
+
+  /**
+   * {@code (type) (o % divisor)}.
+   *
+   * @param o the object, number or string.
+   * @param divisor value by which 'o' is to be divided.
+   * @param type return type.
+   * @return {@code (type) (o % divisor)}.
+   */
+  public static <T extends Number> T remainder(final Object o, final Number divisor, Class<T> type) {
+    if (type == null) return null;
+    NumberObject nO = NumberObject.of(type);
+    Number n = valueOf(o);
+    if (n == null) return nO.valueOf(null);
+    if (divisor == null) return nO.valueOf(n);
+    if (ClassUtils.isPrimitiveWrapper(n.getClass()) && ClassUtils.isPrimitiveWrapper(divisor.getClass())) { return nO.valueOf(valueOf(n, double.class) % valueOf(divisor, double.class)); }
+    if (isInfiniteOrNaN(n) || isInfiniteOrNaN(divisor)) return nO.valueOf(Double.NaN);
+
+    return nO.valueOf(valueOf(n, BigDecimal.class).remainder(valueOf(divisor, BigDecimal.class), MathContext.UNLIMITED));
+  }
+
+  /**
+   * {@link java.math.BigDecimal#setScale(int, RoundingMode)}.
+   *
+   * @param n a number, may be null.
+   * @param scale scale of fraction.
+   * @param mode {@link java.math.RoundingMode}
+   * @return {@code n.setScale(scale, mode)}.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Number> T round(final Object o, final Integer scale, RoundingMode mode) {
+    T n = valueOf(o);
     if (n == null) return null;
 
-    return Math.signum(n.doubleValue());
-  }
-
-  public static <E extends Number, T extends Number> T subtract(final T n, final E subtrahend) {
-    if (!(n != null && subtrahend != null)) throw new IllegalArgumentException("numbers must not be null.");
-
-    return materialize(materialize(n, BigDecimal.class).subtract(materialize(subtrahend, BigDecimal.class)), n);
-  }
-
-  public static <T extends Number> T toAngle(final T radian) {
-    if (radian == null) return null;
-
-    return materialize(materialize(radian, BigDecimal.class).multiply(divide(new BigDecimal(180d), new BigDecimal(Math.PI))), radian);
-  }
-
-  public static <E extends Number> byte[] tobyteArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), byte[].class);
-  }
-
-  public static <E extends Number> double[] todoubleArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), double[].class);
-  }
-
-  public static <E extends Number> float[] tofloatArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), float[].class);
-  }
-
-  public static <E extends Number> int[] tointArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), int[].class);
-  }
-
-  public static <E extends Number> long[] tolongArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), long[].class);
+    return (T) setScale(o, scale == null ? 0 : scale, mode == null ? RoundingMode.HALF_UP : mode, n.getClass());
   }
 
   /**
-   * calculate the radian represented by the angle.
+   * {@code (Number) o - subtrahend}.
    *
-   * @param angle
+   * @param o the object, number or string.
+   * @param subtrahend value to be subtracted from 'o'.
+   * @return {@code (Number) o - subtrahend}.
+   */
+  public static <T extends Number> T subtract(final Object o, final Number subtrahend, Class<T> type) {
+    if (type == null) return null;
+    Number n = valueOf(o);
+    NumberObject nO = NumberObject.of(type);
+    if (n == null || isNaN(n)) return nO.valueOf(subtrahend);
+    if (subtrahend == null || isNaN(subtrahend)) return nO.valueOf(n);
+    if (ClassUtils.isPrimitiveOrWrapper(n.getClass())
+        && ClassUtils.isPrimitiveOrWrapper(subtrahend.getClass())) { return nO.valueOf(valueOf(n, double.class) - valueOf(subtrahend, double.class)); }
+
+    return nO.valueOf(valueOf(n, BigDecimal.class).subtract(valueOf(subtrahend, BigDecimal.class)));
+  }
+
+  /**
+   * {@code (Number) o - subtrahend}.
+   *
+   * @param o the object, number or string.
+   * @param subtrahend value to be subtracted from 'o'.
+   * @return {@code o - subtrahend}.
+   */
+  public static <T extends Number> T subtract(final Object o, final T subtrahend) {
+    return subtract(o, subtrahend, getClass(subtrahend));
+  }
+
+  /**
+   * {@code n - subtrahend}.
+   *
+   * @param n a number, may be null.
+   * @param subtrahend
+   * @return {@code n - subtrahend}.
+   */
+  public static <T extends Number> T subtract(final T n, final Number subtrahend) {
+    return subtract(n, subtrahend, getClass(n));
+  }
+
+  /**
+   * {@link java.lang.Math#toDegrees(double)}.
+   *
+   * @param radians
+   * @return the angle represented by specified radian.
+   */
+  public static <T extends Number> double toDegrees(final Number radians) {
+    if (Float.class.equals(NumberObject.of(radians).wrapper)) return Math.toDegrees(valueOf(radians, float.class));
+
+    return valueOf(radians, double.class) * 180d / Math.PI;
+  }
+
+  /**
+   * {@link java.lang.Math#toRadians(double)}.
+   *
+   * @param degrees
+   * @return the radian represented by specified angle.
+   */
+  public static <T extends Number> double toRadians(final Number degrees) {
+    if (Float.class.equals(NumberObject.of(degrees).wrapper)) return Math.toRadians(valueOf(degrees, float.class));
+
+    return valueOf(degrees, double.class) / 180d * Math.PI;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Number> T up(final Object o) {
+    return (T) up(o, getClass(valueOf(o)));
+  }
+
+  /**
+   * {@link java.lang.Math#floor(double)}.
+   *
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T up(final Object o, final Class<T> type) {
+    return up(o, 0, type);
+  }
+
+  /**
+   * {@link java.lang.Math#floor(double)}.
+   *
+   * @param o the object, number or string.
+   * @param scale scale of fraction.
+   * @param type return type.
+   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   */
+  public static <T extends Number> T up(final Object o, final Number scale, final Class<T> type) {
+    return setScale(o, scale, RoundingMode.UP, type);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Number> T valueOf(Object o) {
+    if (o == null) return null;
+    if (Number.class.isAssignableFrom(o.getClass())) return (T) o;
+    if ("-Infinity".equals(o.toString())) return (T) (Double) Double.NEGATIVE_INFINITY;
+    if ("Infinity".equals(o.toString())) return (T) (Double) Double.POSITIVE_INFINITY;
+    if ("NaN".equals(o.toString())) return (T) (Double) Double.NaN;
+    try {
+      if (isNumber(o.toString())) return (T) createNumber(o.toString());
+    } catch (NumberFormatException e) {}
+
+    return null;
+  }
+
+  public static <T extends Number> T valueOf(Object o, Class<T> type) {
+    return valueOf(o, type, false);
+  }
+
+  public static <T extends Number> T valueOf(Object o, Class<T> type, boolean nonNull) {
+    if (type == null) return null;
+    NumberObject nO = NumberObject.of(type);
+    if (o != null && Number.class.isAssignableFrom(o.getClass())) return nO.valueOf((Number) o, nonNull);
+
+    return nO.valueOf(valueOf(o), nonNull);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Number> Class<T> getClass(T n) {
+    return n == null ? null : ((Class<T>) n.getClass());
+  }
+
+  /**
+   * {@link java.math.BigDecimal#setScale(int, RoundingMode)}
+   *
+   * @param o the object. number or String.
+   * @param scale scale of the BigDecimal value to be returned.
+   * @param roundingMode the rounding mode to apply.
+   * @param type number type to be returned.
    * @return
    */
-  public static <T extends Number> T toRadian(final T angle) {
-    if (angle == null) return null;
+  private static <T extends Number> T setScale(final Object o, final Number scale, final RoundingMode roundingMode, final Class<T> type) {
+    if (isNaN(o)) return NumberObject.of(type == null ? getClass(valueOf(o)) : type).valueOf(valueOf(o));
+    BigDecimal n = valueOf(o, BigDecimal.class);
 
-    return materialize(materialize(angle, BigDecimal.class).multiply(divide(new BigDecimal(Math.PI), new BigDecimal(180d))), angle);
+    return NumberObject.of(type == null ? getClass(valueOf(o)) : type).valueOf(n == null ? null : n.setScale(valueOf(scale, int.class), roundingMode == null ? RoundingMode.HALF_EVEN : roundingMode));
   }
 
-  public static <E extends Number> short[] toshortArray(E[] array) {
-    return Jsonifier.parseLazy(Jsonifier.stringifyLazy(array), short[].class);
+  /**
+   * POSITIVE_INFINITY in BigDecimal.
+   *
+   * @param type Float or Double.
+   * @return POSITIVE_INFINITY in BigDecimal.
+   */
+  private static final BigDecimal toInfinityAndBeyond(Class<? extends Number> type) {
+    if (Double.class.equals(type)) return new BigDecimal(Double.MAX_VALUE).add(new BigDecimal(Math.ulp(Double.MAX_VALUE) / 2));
+    if (Float.class.equals(type)) return new BigDecimal(Float.MAX_VALUE).add(new BigDecimal(Math.ulp(Float.MAX_VALUE) / 2));
+
+    throw new IllegalArgumentException("the type \"" + type + "\" are not implements Infinities.");
   }
 
-  protected NumberUtils() {
+  /**
+   * NumberUtils instances should NOT be constructed in standard programming.
+   */
+  private NumberUtils() {
     super();
   }
 }

@@ -18,16 +18,51 @@ package jp.furplag.util.commons;
 import java.io.File;
 import java.io.IOException;
 
+import jp.furplag.util.JSONifier;
+
+import org.apache.commons.io.FilenameUtils;
+
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
   protected FileUtils() {
     super();
   }
 
-  public static void forceMkdir(String path) throws IOException {
-    if (StringUtils.isSimilarToBlank(path)) throw new IOException("path must not be empty.");
-
-    forceMkdir(new File(path));
+  public static boolean createNewFile(String filename) {
+    return createNewFile(filename, true);
   }
 
+  private static boolean createNewFile(String filename, boolean printStackTrace) {
+    try {
+      if (StringUtils.isSimilarToBlank(filename)) throw new IOException("path must not be empty.");
+      String path = normalize(filename);
+      File file = new File(path);
+      if (file.exists() && file.isDirectory()) throw new IOException(normalize(file.getAbsolutePath()) + " is directory.");
+      path = normalize(file.getAbsolutePath());
+      forceMkdir(StringUtils.truncateLast(path, "/.*"));
+      if (!file.exists()) return file.createNewFile();
+      
+    } catch (Exception e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+
+    return false;
+  }
+
+  private static void forceMkdir(String path) throws IOException {
+    if (StringUtils.isSimilarToBlank(path)) {
+      throw new IOException("path must not be empty.");
+    }
+
+    forceMkdir(new File(normalize(path)));
+  }
+
+  private static String normalize(String filename) {
+    return FilenameUtils.normalizeNoEndSeparator(filename, true);
+  }
+
+  public static void main(String[] args) {
+    String filename = "/test.txt";
+    System.out.println(createNewFile(filename) ? JSONifier.stringifyLazy(new File(filename)) : "fail");
+  }
 }

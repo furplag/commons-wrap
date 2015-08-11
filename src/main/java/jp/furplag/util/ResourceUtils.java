@@ -120,7 +120,7 @@ public class ResourceUtils {
    * @return
    */
   public static String get(final String baseName, final String key, final Object arguments, final String defaultString, final String locale) {
-    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
+    return get(baseName, key, arguments, defaultString, Localizer.getAvailableLocale(locale));
   }
 
   /**
@@ -196,8 +196,41 @@ public class ResourceUtils {
     return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
   }
 
+  /**
+   * shorthand for {@code java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(String, Locale), Object...)}
+   *
+   * @param bundle
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @return
+   */
+  public static String get(final ResourceBundle bundle, final String key, final Object[] arguments, final String defaultString) {
+    return get(bundle, key, arguments, defaultString, false);
+  }
+
+  /**
+   * shorthand for {@code java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(String, Locale), Object...)}
+   *
+   * @param bundle
+   * @param key
+   * @param arguments
+   * @param defaultString
+   * @param printStackTrace
+   * @return
+   */
+  private static String get(final ResourceBundle bundle, final String key, final Object[] arguments, final String defaultString, final boolean printStackTrace) {
+    try {
+      if (bundle != null) return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(bundle.getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+    } catch (MissingResourceException e) {
+      if (printStackTrace) e.printStackTrace();
+    }
+
+    return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+  }
+
   public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final String locale) {
-    return get(baseName, key, arguments, defaultString, Localizer.newLocale(locale));
+    return get(baseName, key, arguments, defaultString, Localizer.getAvailableLocale(locale));
   }
 
   public static String get(final String baseName, final String key, final String defaultString) {

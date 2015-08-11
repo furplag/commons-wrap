@@ -16,23 +16,27 @@
 /**
  *
  */
+
 package jp.furplag.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static jp.furplag.util.Localizer.getAvailableLocale;
+import static jp.furplag.util.Localizer.getDateTimeZone;
+import static org.junit.Assert.*;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jp.furplag.util.Localizer.LazyInitializer;
 
 public class LocalizerTest {
 
@@ -55,115 +59,116 @@ public class LocalizerTest {
   public void tearDown() throws Exception {}
 
   @Test
-  public final void testNewDateTimeZone() {
-    assertEquals(DateTimeZone.getDefault(), Localizer.newDateTimeZone(null));
-    assertEquals(DateTimeZone.UTC, Localizer.newDateTimeZone("not a timezone"));
-    assertEquals(DateTimeZone.forID("Asia/Tokyo"), Localizer.newDateTimeZone("Asia/Tokyo"));
-    assertEquals(DateTimeZone.forID("+00"), Localizer.newDateTimeZone("0"));
+  public final void testGetDateTimeZone() {
+    DateTime dateTime = DateTime.parse("1995-05-23T00:00:00Z");
 
-    DateTime dateTime = DateTime.now();
-    assertEquals(dateTime.withZone(DateTimeZone.forID("+00")), dateTime.withZone(Localizer.newDateTimeZone("+00")));
-    assertTrue(dateTime.withZone(DateTimeZone.forID("+09:18")).isEqual(dateTime.withZone(Localizer.newDateTimeZone("9:18"))));
-    assertTrue(dateTime.withZone(DateTimeZone.forID("-03:07")).isEqual(dateTime.withZone(Localizer.newDateTimeZone("-03:07:00.000"))));
+    assertEquals("fallback : null", DateTimeZone.getDefault(), getDateTimeZone(null));
+    assertEquals("fallback : empty", DateTimeZone.UTC, getDateTimeZone(""));
+    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("not a timezone"));
+    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone(0d));
+    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone(0.18f));
+    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("12.345"));
+    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("1.23.45"));
 
-    assertEquals(DateTimeZone.UTC, Localizer.newDateTimeZone(TimeZone.getTimeZone("not a timezone")));
-    assertEquals(DateTimeZone.forID("Asia/Tokyo"), Localizer.newDateTimeZone(DateTimeZone.forID("Asia/Tokyo")));
+    DateTimeFormatter formatter = ISODateTimeFormat.dateHourMinuteSecondMillis();
+    long limit = 86400000L;
+    for (long millis = -limit; millis <= limit; millis += 500L) {
+      LocalTime offset = LocalTime.fromMillisOfDay(millis % 86400000L * (millis < 0 ? -1 : 1));
+      String expected = DateTimeZone.forID((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
+      String actual = getDateTimeZone(millis).getID();
+      assertEquals("millis : [" + millis + "]", expected, actual);
+    }
 
-    dateTime = new DateTime("1995-05-23T00:00:00Z");
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(dateTime.getMillis());
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    TimeZone zone = null;
-    String expected = null;
-    String actual = null;
+    for (long millis = 0; millis <= limit; millis += 500L) {
+      LocalTime offset = dateTime.plusMillis((int) millis * (millis < 0 ? -1 : 1)).toLocalTime();
+      String expected = DateTimeZone.forID((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
+      String actual = getDateTimeZone((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
+      assertEquals("offsetString : [" + millis + "]", expected, actual);
+    }
+
+    for (String id : DateTimeZone.getAvailableIDs()) {
+      String expected = dateTime.withZone(DateTimeZone.forID(id)).toString(formatter);
+      String actual = dateTime.withZone(getDateTimeZone(id)).toString(formatter);
+      assertEquals("forID : [" + id + "][" + DateTimeZone.forID(id).getID() + "][" + getDateTimeZone(id).getID() + "]", expected, actual);
+    }
+
     for (String id : TimeZone.getAvailableIDs()) {
-      zone = TimeZone.getTimeZone(id.replaceAll("^EST$", "EST5EDT").replaceAll("^MST$", "MST7MDT"));
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      expected = id + ":" + sdf.format(calendar.getTime());
-      zone = Localizer.newDateTimeZone(zone).toTimeZone();
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      actual = id + ":" + sdf.format(calendar.getTime());
-      assertEquals(expected, actual);
+      TimeZone zone = TimeZone.getTimeZone(id);
+      if (LazyInitializer.ZONE_DUPRECATED.containsKey(id)) zone = TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(id));
+      String expected = dateTime.withZone(DateTimeZone.forTimeZone(zone)).toString(formatter);
+      String actual = dateTime.withZone(getDateTimeZone(zone)).toString(formatter);
+      assertEquals("forTimeZone : [" + DateTimeZone.forTimeZone(zone).getID() + "][" + getDateTimeZone(zone).getID() + "]", expected, actual);
     }
   }
 
   @Test
-  public final void testNewLocaleObject() {
-    assertEquals(Locale.getDefault(), Localizer.newLocale());
-    assertEquals(Locale.ROOT, Localizer.newLocale(""));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("_"));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("japan_JAPANESE"));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("JP"));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("ja-JP"));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("ja,JP"));
-    assertEquals(Locale.JAPANESE, Localizer.newLocale("ja"));
-    assertEquals(Locale.JAPANESE, Localizer.newLocale("ja_"));
-    assertEquals(Locale.JAPANESE, Localizer.newLocale("ja___"));
-    assertEquals(Locale.JAPAN, Localizer.newLocale("ja_JP"));
-    assertEquals(Locale.JAPAN, Localizer.newLocale("ja_JP_"));
-    assertEquals(Locale.JAPAN, Localizer.newLocale("ja_JP__"));
-    assertEquals(new Locale("ja", "JP", "JP"), Localizer.newLocale("ja_JP_JP"));
-    assertEquals(new Locale("ja", "JP", "JP"), Localizer.newLocale("ja_JP_JP_#u-ca-japanese"));
-    assertEquals(new Locale("th", "TH", "TH"), Localizer.newLocale("th_TH_TH"));
-    assertEquals(new Locale("th", "TH", "TH"), Localizer.newLocale("th_TH_TH_#u-nu-thai"));
+  public final void testGetAvailableLocaleObject() {
+    assertEquals("fallback : default", Locale.getDefault(), getAvailableLocale());
+    assertEquals("fallback : empty", Locale.ROOT, getAvailableLocale(""));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("_"));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("japan_JAPANESE"));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("JP"));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("ja-JP"));
+    assertEquals("accept", Locale.FRANCE, getAvailableLocale("fr,FR"));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja"));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja_"));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja___"));
+    assertEquals("accept", Locale.JAPAN, getAvailableLocale("ja_JP"));
+    assertEquals("accept", Locale.JAPAN, getAvailableLocale("ja_JP_"));
+    assertEquals("accept", Locale.JAPAN, getAvailableLocale("ja_JP__"));
+    assertEquals("convertible", new Locale("ja", "JP", "JP"), getAvailableLocale("ja_JP_JP"));
+    assertEquals("convertible", new Locale("ja", "JP", "JP"), getAvailableLocale("ja_JP_JP_#u-ca-japanese"));
+    assertEquals("convertible", new Locale("th", "TH", "TH"), getAvailableLocale("th_TH_TH"));
+    assertEquals("convertible", new Locale("th", "TH", "TH"), getAvailableLocale("th_TH_TH_#u-nu-thai"));
 
-    assertEquals(Locale.US, Localizer.newLocale(Locale.US));
+    assertEquals(Locale.US, getAvailableLocale(Locale.US));
 
     for (Locale locale : Locale.getAvailableLocales()) {
-      Locale actual = Localizer.newLocale(locale.toString());
-      assertEquals(locale.getLanguage(), actual.getLanguage());
-      assertEquals(locale.getCountry(), actual.getCountry());
-      assertEquals(locale.getVariant(), actual.getVariant());
+      Locale actual = getAvailableLocale(locale.toString());
+      assertEquals("id", locale.getDisplayName(Locale.ROOT), actual.getDisplayName(Locale.ROOT));
+      assertEquals("id : localized", locale.getDisplayName(), actual.getDisplayName());
     }
   }
 
   @Test
-  public final void testNewLocaleStringArray() {
-    assertEquals(Locale.getDefault(), Localizer.newLocale(new String[]{}));
-    assertEquals(Locale.getDefault(), Localizer.newLocale(new String[]{null}));
-    assertEquals(Locale.getDefault(), Localizer.newLocale(null, null, null));
-    assertEquals(Locale.getDefault(), Localizer.newLocale(new String[]{null, null, null}));
-    assertEquals(Locale.ROOT, Localizer.newLocale(new String[]{""}));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("", "", ""));
-    assertEquals(Locale.getDefault(), Localizer.newLocale("_", "_", "_"));
-    assertEquals(Locale.getDefault(), Localizer.newLocale(new String[]{"", ""}));
-    assertEquals(Locale.JAPAN, Localizer.newLocale("ja_", "JP__"));
-    assertEquals(new Locale("ja", "JP", "JP"), Localizer.newLocale("ja", "JP", "JP"));
-    assertEquals(new Locale("ja", "JP", "JP"), Localizer.newLocale("ja", "JP_JP"));
-    assertEquals(new Locale("ja", "JP", "JP"), Localizer.newLocale(new String[]{"ja", "JP", "JP"}));
-  }
+  public final void testGetAvailableLocaleStringArray() {
+    assertEquals(Locale.getDefault(), getAvailableLocale(new String[] {}));
+    assertEquals(Locale.ROOT, getAvailableLocale(new String[] { null }));
+    assertEquals(Locale.ROOT, getAvailableLocale(null, null, null));
+    assertEquals(Locale.ROOT, getAvailableLocale(new String[] { null, null, null }));
+    assertEquals(Locale.ROOT, getAvailableLocale(new String[] { "" }));
+    assertEquals(Locale.ROOT, getAvailableLocale("", "", ""));
+    assertEquals(Locale.ROOT, getAvailableLocale("_", "_", "_"));
+    assertEquals(Locale.ROOT, getAvailableLocale(new String[] { "", "" }));
+    assertEquals(Locale.JAPAN, getAvailableLocale("ja_", "JP__"));
+    assertEquals(new Locale("ja", "JP", "JP"), getAvailableLocale("ja", "JP", "JP"));
+    assertEquals(new Locale("ja", "JP", "JP"), getAvailableLocale("ja", "JP_JP"));
+    assertEquals(new Locale("ja", "JP", "JP"), getAvailableLocale(new String[] { "ja", "JP", "JP" }));
 
-  @Test
-  public final void testNewTimeZone() {
-    assertEquals(TimeZone.getDefault(), Localizer.newTimeZone(null));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), Localizer.newTimeZone(""));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), Localizer.newTimeZone("/"));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), Localizer.newTimeZone("Asia"));
-    assertEquals(DateTimeZone.UTC.toTimeZone(), Localizer.newTimeZone("Asia/"));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, Localizer.newTimeZone("Asia/Tokyo").getOffset(DateTime.now(DateTimeZone.UTC).getMillis()));
-    assertEquals(9 * DateUtils.MILLIS_PER_HOUR, Localizer.newTimeZone("JST").getOffset(DateTime.now(DateTimeZone.UTC).getMillis()));
+    assertEquals("fallback : default", Locale.getDefault(), getAvailableLocale(new String[] {}));
+    assertEquals("fallback : empty", Locale.ROOT, getAvailableLocale(new String[] { null }));
+    assertEquals("fallback : empty", Locale.ROOT, getAvailableLocale(new String[] { "" }));
+    assertEquals("fallback : empty", Locale.ROOT, getAvailableLocale(new String[] { null, null, null }));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("_", "_", "_"));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("", "__"));
+    assertEquals("fallback : invalid", Locale.ROOT, getAvailableLocale("", "JP"));
+    assertEquals("accept", Locale.FRANCE, getAvailableLocale("fr", "FR"));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja"));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja", "", ""));
+    assertEquals("accept", Locale.JAPANESE, getAvailableLocale("ja___"));
+    assertEquals("accept", Locale.JAPAN, getAvailableLocale("ja", "JP"));
+    assertEquals("accept", Locale.JAPAN, getAvailableLocale(new String[] { "ja_JP" }));
+    assertEquals("convertible", new Locale("ja", "JP", "JP"), getAvailableLocale("ja", "JP_JP"));
+    assertEquals("convertible", new Locale("ja", "JP", "JP"), getAvailableLocale("ja", "JP", "JP", "#u-ca-japanese"));
+    assertEquals("convertible", new Locale("th", "TH", "TH"), getAvailableLocale("th", "TH", "TH"));
+    assertEquals("convertible", new Locale("th", "TH", "TH"), getAvailableLocale("th_TH_TH", "#u-nu-thai"));
 
-    String dateTimeString = "1995-05-23T00:00:00Z";
-    DateTime dateTime = new DateTime(dateTimeString);
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(dateTime.getMillis());
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-    TimeZone zone = null;
-    String expected = "";
-    String actual = "";
-    for (String id : TimeZone.getAvailableIDs()) {
-      zone = TimeZone.getTimeZone(id);
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      expected = id + ":" + sdf.format(calendar.getTime());
-      zone = Localizer.newTimeZone(id);
-      calendar.setTimeZone(zone);
-      sdf.setTimeZone(zone);
-      actual = id + ":" + sdf.format(calendar.getTime());
-      assertEquals(expected, actual);
+    assertEquals(Locale.US, getAvailableLocale(Locale.US));
+
+    for (Locale locale : Locale.getAvailableLocales()) {
+      Locale actual = getAvailableLocale(locale.getLanguage(), locale.getCountry(), locale.getVariant(), locale.toString().endsWith("#Latn") ? "#Latn" : "");
+      assertEquals("id : [" + locale.toString() + "]", locale.getDisplayName(Locale.ROOT), actual.getDisplayName(Locale.ROOT));
+      assertEquals("id : [" + locale.toString() + "](localized)", locale.getDisplayName(), actual.getDisplayName());
     }
   }
-
 }
