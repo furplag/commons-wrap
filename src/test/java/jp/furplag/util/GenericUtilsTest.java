@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,5 +74,6 @@ public class GenericUtilsTest {
     assertArrayEquals(new Integer[]{}, GenericUtils.newInstance(new TypeReference<Integer[]>(){}));
     Map<String, List<Object>> map = new HashMap<String, List<Object>>();
     assertEquals(map, GenericUtils.newInstance(new TypeReference<Map<String, List<Object>>>(){}));
+    assertEquals(new ArrayList<Map<String, Map<String, Object>>>(), GenericUtils.newInstance(new TypeReference<List<Map<String, Map<String, Object>>>>(){}));
   }
 }
