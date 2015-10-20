@@ -22,6 +22,12 @@ package jp.furplag.util.commons;
  */
 public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
 
+  /**
+   * {@link org.apache.commons.lang3.ClassUtils#isPrimitiveOrWrapper(Class)}.
+   *
+   * @param objects objects. Class<?> or an Object.
+   * @return {@code for (Object o : objects) isPrimitiveOrWrapper(class of o)}.
+   */
   public static boolean isPrimitiveOrWrappers(Object ... objects) {
     if (objects == null || objects.length < 1) return false;
     for (Object o : objects) {
@@ -31,6 +37,12 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
     return true;
   }
 
+  /**
+   * {@link org.apache.commons.lang3.ClassUtils#isPrimitiveWrapper(Class)}.
+   *
+   * @param objects objects. Class<?> or an Object.
+   * @return {@code for (Object o : objects) isPrimitiveWrapper(class of o)}.
+   */
   public static boolean isPrimitiveWrappers(Object ... objects) {
     if (objects == null || objects.length < 1) return false;
     for (Object o : objects) {
@@ -40,6 +52,12 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
     return true;
   }
 
+  /**
+   * Object.getClass() against null.
+   *
+   * @param objects object. Class<?> or an Object.
+   * @return
+   */
   private static Class<?> getClassLazy(Object o) {
     if (o == null) return null;
     if (o instanceof Class) return (Class<?>) o;

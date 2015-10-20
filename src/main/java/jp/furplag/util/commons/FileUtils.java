@@ -41,7 +41,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
       path = normalize(file.getAbsolutePath());
       forceMkdir(StringUtils.truncateLast(path, "/.*"));
       if (!file.exists()) return file.createNewFile();
-      
+
     } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
