@@ -237,15 +237,9 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
         if (fractionable) return (T) wrapper.getMethod("valueOf", String.class).invoke(null, n.toString().startsWith("-") ? min.toPlainString() : max.toPlainString());
 
         return (T) wrapper.getMethod("valueOf", String.class).invoke(null, n.toString().startsWith("-") ? min.stripTrailingZeros().toPlainString() : max.stripTrailingZeros().toPlainString());
-      } catch (Exception e) {e.printStackTrace();}
-//      } catch (IllegalAccessException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {} catch (NumberFormatException e) {}
+      } catch (IllegalAccessException e) {} catch (InvocationTargetException e) {} catch (NoSuchMethodException e) {} catch (NumberFormatException e) {}
 
       return (T) (nonNull ? zero : origin);
-    }
-
-    @SuppressWarnings("unchecked")
-    <T extends Number> T zero() {
-      return (T) this.zero;
     }
   }
 
@@ -395,14 +389,33 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return Range.between(valueOf(fromInclusive, Double.class), valueOf(toInclusive, Double.class)).contains(valueOf(o, Double.class));
   }
 
+  /**
+   * {@link java.lang.Math#cos(double)}.
+   *
+   * @param angle the angle represented by degrees.
+   * @return {@code Math.cos(Math.toRadians(angle))}.
+   */
   public static double cos(long angle) {
     return cos((Number) angle);
   }
 
+  /**
+   * {@link java.lang.Math#cos(double)}.
+   *
+   * @param angle the angle represented by degrees.
+   * @return {@code Math.cos(Math.toRadians(angle))}.
+   */
   public static double cos(Number angle) {
     return cos(angle, false);
   }
 
+  /**
+   * {@link java.lang.Math#cos(double)}.
+   *
+   * @param angle the angle represented by radians.
+   * @param isRadians if false, the angle represented by degrees.
+   * @return {@code Math.cos(angle)}.
+   */
   public static double cos(Number angle, boolean isRadians) {
     return Math.cos(isRadians ? valueOf(angle, double.class) : toRadians(angle));
   }
@@ -433,14 +446,11 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     Number n = valueOf(o);
     if (n == null) return setScale(divisor, scale, mode, type);
     if (divisor == null) return setScale(n, scale, mode, type);
-    if (ClassUtils.isPrimitiveOrWrappers(n, divisor)) {
-      if (scale != null) return setScale(valueOf(n, double.class) / valueOf(divisor, double.class), scale, mode, type);
+    MathContext mc = new MathContext(INFINITY_DOUBLE.precision(), RoundingMode.HALF_EVEN);
+    if (ClassUtils.isPrimitiveOrWrappers(n, divisor, type)) mc = MathContext.DECIMAL128;
+    if (scale != null) return setScale(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class), mc), scale, mode, type);
 
-      return NumberObject.of(type).valueOf(valueOf(n, double.class) / valueOf(divisor, double.class));
-    }
-    if (scale != null) return setScale(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class)), scale, mode, type);
-
-    return NumberObject.of(type).valueOf(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class)));
+    return NumberObject.of(type).valueOf(valueOf(n, BigDecimal.class).divide(valueOf(divisor, BigDecimal.class), mc));
   }
 
   /**
@@ -536,14 +546,15 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
   /**
    * {@link java.lang.Double#isInfinite()}.
    *
-   * @param n a number, may be null.
+   * @param o the object, number or string.
    * @param signum return {@code n == -Infinity} if {@code signum < 0}. if {@code signum > 0}, return {@code n == Infinity}.
    * @return {@code == Infinity}.
    */
-  public static boolean isInfinite(final Number n, final int signum) {
+  public static boolean isInfinite(final Object o, final int signum) {
+    Number n = valueOf(o);
     if (n == null) return false;
     if (!ObjectUtils.isAny(n, double.class, Double.class, float.class, Float.class)) return false;
-    if (n.toString().equals(signum < 0 ? "-Infinity" : "Infinity")) return true;
+    if (n.toString().equalsIgnoreCase(signum < 0 ? "-Infinity" : "Infinity")) return true;
     if (signum > 0 && Double.POSITIVE_INFINITY == Double.valueOf(n.toString())) return true;
     if (signum < 0 && Double.NEGATIVE_INFINITY == Double.valueOf(n.toString())) return true;
     if (signum == 0 && Double.valueOf(n.toString()).isInfinite()) return true;
@@ -558,21 +569,30 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @return {@link java.lang.Double#isInfinite()}.
    */
   public static boolean isInfinite(Object o) {
-    return isInfinite(valueOf(o), 0);
+    return isInfinite(o, 0);
   }
 
+  /**
+   * {@link java.lang.Double#isInfinite()} {@link java.lang.Double#isNaN()}
+   *
+   * @param o the object, number or string.
+   * @return {@code isInfinite(o) || isNaN(o)}.
+   */
   public static boolean isInfiniteOrNaN(Object o) {
     return isNaN(o) || isInfinite(o);
   }
 
-  public static boolean isNaN(Number n) {
+  /**
+   * {@link java.lang.Double#isNaN()}.
+   *
+   * @param o the object, number or string.
+   * @return {@link java.lang.Double#isNaN()}.
+   */
+  public static boolean isNaN(Object o) {
+    Number n = valueOf(o);
     if (ObjectUtils.isAny(n, double.class, Double.class)) return ((Double) n).isNaN();
 
     return ObjectUtils.isAny(n, float.class, Float.class) && ((Float) n).isNaN();
-  }
-
-  public static boolean isNaN(Object o) {
-    return isNaN(valueOf(o));
   }
 
   /**
@@ -583,12 +603,7 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @return {@code o * multiplicand}.
    */
   public static <T extends Number> T multiply(final Object o, final T multiplicand) {
-    if (multiplicand == null) return null;
-    try {
-      return multiply(valueOf(o, getClass(multiplicand), false), multiplicand);
-    } catch (NumberFormatException e) {}
-
-    return null;
+    return multiply(o, multiplicand, getClass(multiplicand));
   }
 
   /**
@@ -599,10 +614,24 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @return {@code n * multiplicand}.
    */
   public static <T extends Number> T multiply(final T n, final Number multiplicand) {
-    if (n == null) return n;
-    if (multiplicand == null) return n;
+    return multiply(n, multiplicand, getClass(n));
+  }
 
-    return valueOf(valueOf(n, BigDecimal.class).multiply(valueOf(multiplicand, BigDecimal.class)), getClass(n));
+  /**
+   * {@code o * multiplicand}.
+   *
+   * @param o the object, number or string.
+   * @param multiplicand value to be multiplied by n.
+   * @param type return type.
+   * @return {@code o * multiplicand}.
+   */
+  public static <T extends Number> T multiply(final Object o, final Number multiplicand, Class<T> type) {
+    if (type == null) return null;
+    Number n = valueOf(o);
+    if (n == null) return NumberObject.of(type).valueOf(multiplicand);
+    if (multiplicand == null) return NumberObject.of(type).valueOf(multiplicand);
+
+    return NumberObject.of(type).valueOf(valueOf(n, BigDecimal.class).multiply(valueOf(multiplicand, BigDecimal.class)));
   }
 
   /**
@@ -636,14 +665,6 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     if (minimum == null && maximum == null) return nO.valueOf(n);
     if (minimum == null && maximum == null) return nO.valueOf(n);
     if (compareTo(minimum, maximum) == 0) return nO.valueOf(minimum == null ? maximum == null ? n : maximum : minimum);
-//    if (ClassUtils.isPrimitiveOrWrappers(n, minimum, maximum) || ClassUtils.isPrimitiveOrWrappers(n, (minimum == null ? maximum : minimum))) {
-//      Range<Double> range = Range.between(valueOf(minimum, double.class), valueOf(maximum, double.class));
-//      double nD = valueOf(n, double.class);
-//      if (nD == range.getMaximum()) return nO.valueOf(range.getMinimum());
-//      if (range.contains(nD)) return nO.valueOf(nD);
-//
-//      return nO.valueOf(((nD - range.getMinimum()) % (range.getMaximum() - range.getMinimum())) + (nD > range.getMaximum() ? range.getMinimum() : range.getMaximum()));
-//    }
     if (isInfinite(minimum) && isInfinite(maximum)) return nO.valueOf(n);
     Range<BigDecimal> range = Range.between(minimum == null ? BigDecimal.ZERO : valueOf(minimum, BigDecimal.class), maximum == null ? BigDecimal.ZERO : valueOf(maximum, BigDecimal.class));
     BigDecimal nB = valueOf(n, BigDecimal.class);
@@ -651,23 +672,6 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     if (range.contains(nB)) return nO.valueOf(nB);
 
     return nO.valueOf((nB.subtract(range.getMinimum()).remainder(range.getMaximum().subtract(range.getMinimum()), MathContext.UNLIMITED)).add(nB.compareTo(range.getMaximum()) > 0 ? range.getMinimum() : range.getMaximum()));
-  }
-
-  public static void main(String[] args) {
-    System.out.println(Long.MAX_VALUE);
-    System.out.println(BigDecimal.valueOf(Long.MAX_VALUE));
-    System.out.println(new BigDecimal(((Long)Long.MAX_VALUE).toString()));
-    System.out.println(new BigDecimal(Long.MAX_VALUE));
-    System.out.println(new BigDecimal(Double.valueOf(Long.MAX_VALUE)));
-    System.out.println();
-    System.out.println(Integer.MAX_VALUE);
-    System.out.println(BigDecimal.valueOf(Integer.MAX_VALUE));
-    System.out.println(new BigDecimal(((Integer)Integer.MAX_VALUE).toString()));
-    System.out.println(new BigDecimal(Integer.MAX_VALUE));
-    System.out.println(new BigDecimal(Double.valueOf(Integer.MAX_VALUE)));
-
-    System.out.println(valueOf(Double.valueOf(Long.MAX_VALUE), BigDecimal.class).toPlainString());
-    System.out.println(normalize(Long.MAX_VALUE, Long.MIN_VALUE, Long.MAX_VALUE).getClass());
   }
 
   /**
@@ -684,10 +688,6 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     } catch (NumberFormatException e) {}
 
     return null;
-  }
-
-  public static <T extends Number> T round(final Object o) {
-    return round(o, 0, null);
   }
 
   /**
@@ -725,17 +725,34 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
   /**
    * {@link java.math.BigDecimal#setScale(int, RoundingMode)}.
    *
-   * @param n a number, may be null.
-   * @param scale scale of fraction.
-   * @param mode {@link java.math.RoundingMode}
-   * @return {@code n.setScale(scale, mode)}.
+   * @param n a number object, may be null.
+   * @return {@code n.setScale(0, RoundingMode.HALF_EVEN)}.
    */
-  @SuppressWarnings("unchecked")
-  public static <T extends Number> T round(final Object o, final Integer scale, RoundingMode mode) {
-    T n = valueOf(o);
-    if (n == null) return null;
+  public static <T extends Number> T round(final T n) {
+    return round(n, null, null, getClass(n));
+  }
 
-    return (T) setScale(o, scale == null ? 0 : scale, mode == null ? RoundingMode.HALF_UP : mode, n.getClass());
+  /**
+   * {@link java.math.BigDecimal#setScale(int, RoundingMode)}.
+   *
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return {@code o.setScale(0, mode)}.
+   */
+  public static <T extends Number> T round(final Object o, Class<T> type) {
+    return round(o, null, null, type);
+  }
+
+  /**
+   * {@link java.math.BigDecimal#setScale(int, RoundingMode)}.
+   *
+   * @param o the object, number or string.
+   * @param scale scale of fraction.
+   * @param type return type.
+   * @return {@code o.setScale(scale, mode)}.
+   */
+  public static <T extends Number> T round(final Object o, final Number scale, RoundingMode mode, Class<T> type) {
+    return setScale(o, scale, mode == null ? RoundingMode.HALF_UP : mode, type);
   }
 
   /**
@@ -751,8 +768,9 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     NumberObject nO = NumberObject.of(type);
     if (n == null || isNaN(n)) return nO.valueOf(subtrahend);
     if (subtrahend == null || isNaN(subtrahend)) return nO.valueOf(n);
-    if (ClassUtils.isPrimitiveOrWrapper(n.getClass())
-        && ClassUtils.isPrimitiveOrWrapper(subtrahend.getClass())) { return nO.valueOf(valueOf(n, double.class) - valueOf(subtrahend, double.class)); }
+    if (isInfinite(n, 1) && isInfinite(subtrahend, 1)) return nO.valueOf(Double.NaN);
+    if (isInfinite(n, -1) && isInfinite(subtrahend, -1)) return nO.valueOf(Double.NaN);
+    if (isInfinite(n) && isInfinite(subtrahend)) return nO.valueOf(valueOf(isInfinite(n, 1) ? "Infinity" : "-Infinity"));
 
     return nO.valueOf(valueOf(n, BigDecimal.class).subtract(valueOf(subtrahend, BigDecimal.class)));
   }
@@ -803,24 +821,30 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return valueOf(degrees, double.class) / 180d * Math.PI;
   }
 
+  /**
+   * {@link java.math.RoundingMode#UP}
+   *
+   * @param o the object, number or string.
+   * @return {@code o.setScale(0, RoundingMode.UP)}.
+   */
   @SuppressWarnings("unchecked")
   public static <T extends Number> T up(final Object o) {
     return (T) up(o, getClass(valueOf(o)));
   }
 
   /**
-   * {@link java.lang.Math#floor(double)}.
+   * {@link java.math.RoundingMode#UP}
    *
    * @param o the object, number or string.
    * @param type return type.
-   * @return {@code floor(o)}. Return null if o could not convertible to number.
+   * @return {@code (type) o.setScale(0, RoundingMode.UP)}.
    */
   public static <T extends Number> T up(final Object o, final Class<T> type) {
     return up(o, 0, type);
   }
 
   /**
-   * {@link java.lang.Math#floor(double)}.
+   * {@link java.math.RoundingMode#UP}
    *
    * @param o the object, number or string.
    * @param scale scale of fraction.
@@ -831,6 +855,12 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return setScale(o, scale, RoundingMode.UP, type);
   }
 
+  /**
+   * {@link org.apache.commons.lang3.math.NumberUtils#createNumber(String)}.
+   *
+   * @param o the object, number or string.
+   * @return {@code (Number) o}. Return null if o could not convertible to number.
+   */
   @SuppressWarnings("unchecked")
   public static <T extends Number> T valueOf(Object o) {
     if (o == null) return null;
@@ -845,10 +875,24 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return null;
   }
 
+  /**
+   * {@link org.apache.commons.lang3.math.NumberUtils#createNumber(String)}.
+   *
+   * @param o the object, number or string.
+   * @param type return type.
+   * @return {@code (type) o}. Return null if o could not convertible to number.
+   */
   public static <T extends Number> T valueOf(Object o, Class<T> type) {
     return valueOf(o, type, false);
   }
 
+  /**
+   * {@link org.apache.commons.lang3.math.NumberUtils#createNumber(String)}.
+   * @param o the object, number or string.
+   * @param type return type.
+   * @param nonNull if true, return zero if o could not convertible to number.
+   * @return {@code (type) o}.
+   */
   public static <T extends Number> T valueOf(Object o, Class<T> type, boolean nonNull) {
     if (type == null) return null;
     NumberObject nO = NumberObject.of(type);
@@ -857,6 +901,12 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return nO.valueOf(valueOf(o), nonNull);
   }
 
+  /**
+   * get class of number for internal.
+   *
+   * @param n a number, may be null.
+   * @return class of materialized number object.
+   */
   @SuppressWarnings("unchecked")
   private static <T extends Number> Class<T> getClass(T n) {
     return n == null ? null : ((Class<T>) n.getClass());
@@ -879,7 +929,7 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
   }
 
   /**
-   * POSITIVE_INFINITY in BigDecimal.
+   * {@link POSITIVE_INFINITY} in BigDecimal.
    *
    * @param type Float or Double.
    * @return POSITIVE_INFINITY in BigDecimal.
