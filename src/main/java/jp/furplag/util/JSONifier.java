@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -35,16 +34,6 @@ import jp.furplag.util.commons.ObjectUtils;
  */
 public final class JSONifier {
 
-  public static void main(String[] args) {
-    try {
-      System.out.println(MAPPER.writeValueAsString(null));
-      System.out.println(MAPPER.writeValueAsString(new Object[]{null}));
-      System.out.println(MAPPER.writeValueAsString(new Object[]{1,"a",null}));
-    } catch (JsonProcessingException e) {
-      // TODO 自動生成された catch ブロック
-      e.printStackTrace();
-    }
-  }
   /**
    * JSONifier instances should NOT be constructed in standard programming.
    */
@@ -57,16 +46,16 @@ public final class JSONifier {
    * create the instance of specified class represented by the JSON String. Throw exceptions if convert has failed.
    *
    * @param str JSON String.
-   * @param clazz destination Class.
+   * @param type destination Class.
    * @return the instance of specified Class.
    * @throws JsonParseException
    * @throws JsonMappingException
    * @throws IOException
    */
-  public static <T> T parse(final String str, final Class<T> clazz) throws JsonParseException, JsonMappingException, IOException {
-    if (str == null) return clazz == null ? null : clazz.isPrimitive() ? MAPPER.readValue("", clazz) : null;
+  public static <T> T parse(final String str, final Class<T> type) throws JsonParseException, JsonMappingException, IOException {
+    if (str == null) return type == null ? null : type.isPrimitive() ? MAPPER.readValue("", type) : null;
 
-    return MAPPER.readValue(str, clazz);
+    return MAPPER.readValue(str, type);
   }
 
   /**
@@ -89,15 +78,15 @@ public final class JSONifier {
    * create the instance of specified class represented by the JSON String. Return empty instance if convert has failed.
    *
    * @param str JSON String.
-   * @param clazz destination Class.
+   * @param type destination Class.
    * @return the instance of specified Class.
    */
-  public static <T> T parseLazy(final String str, final Class<T> clazz) {
+  public static <T> T parseLazy(final String str, final Class<T> type) {
     try {
-      return parse(str, clazz);
+      return parse(str, type);
     } catch (Exception e) {
       try {
-        return ObjectUtils.newInstance(clazz);
+        return ObjectUtils.newInstance(type);
       } catch (Exception ex) {}
     }
 

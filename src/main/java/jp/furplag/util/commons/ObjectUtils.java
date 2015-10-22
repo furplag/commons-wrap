@@ -42,10 +42,25 @@ import com.google.common.collect.Sets;
 public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
 
   /**
-   * ObjectUtils instances should NOT be constructed in standard programming.
+   * substitute for {@code instanceof}.
+   *
+   * @param clazz the Object, return false if null.
+   * @param classes array of {@link java.lang.Class}.
+   * @return if true, {@code o.getClass()} (or Class<?> o) contains given Classes.
    */
-  protected ObjectUtils() {
-    super();
+  public static boolean isAny(final Object o, final Class<?>... classes) {
+    if (classes == null) return o == null;
+    if (classes.length < 1) return false;
+    Class<?> type = o == null ? null : (o instanceof Class) ? ((Class<?>) o) : o.getClass().isArray() ? o.getClass().getComponentType() : o.getClass();
+    for (Class<?> clazz : classes) {
+      if (o == null && clazz == null) return true;
+      if (o == null || clazz == null) continue;
+      if (clazz.equals(type)) return true;
+      if (!(o instanceof Class) && ClassUtils.primitiveToWrapper(type).equals(ClassUtils.primitiveToWrapper(clazz))) return true;
+      if (clazz.isArray() && type.equals(clazz.getComponentType())) return true;
+    }
+
+    return false;
   }
 
   /**
@@ -143,28 +158,9 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
   }
 
   /**
-   * substitute for {@code instanceof}.
-   *
-   * @param clazz the Object, return false if null.
-   * @param classes array of {@link java.lang.Class}.
-   * @return if true, {@code o.getClass()} (or Class<?> o) contains given Classes.
+   * ObjectUtils instances should NOT be constructed in standard programming.
    */
-  public static boolean isAny(final Object o, final Class<?>... classes) {
-    if (classes == null) return o == null;
-    if (classes.length < 1) return false;
-    Class<?> type = o == null ? null : (o instanceof Class) ? ((Class<?>) o) : o.getClass().isArray() ? o.getClass().getComponentType() : o.getClass();
-    for (Class<?> clazz : classes) {
-      if (o == null && clazz == null) return true;
-      if (o == null || clazz == null) continue;
-      if (clazz.equals(type)) return true;
-      if (!(o instanceof Class) && ClassUtils.primitiveToWrapper(type).equals(ClassUtils.primitiveToWrapper(clazz))) return true;
-      if (clazz.isArray() && type.equals(clazz.getComponentType())) return true;
-    }
-
-    return false;
-  }
-
-  public static void main(String[] args) {
-    isAny(double.class, Double.class);
+  protected ObjectUtils() {
+    super();
   }
 }

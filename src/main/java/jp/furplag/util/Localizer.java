@@ -46,12 +46,6 @@ public final class Localizer {
   /** a regular expression of timezone offsets. */
   private static final Pattern OFFSET = Pattern.compile("^(\\+|\\-)?\\d{1,2}((:\\d{1,2}){1,2}|(\\d{1,2}:){2}\\d{1,2}(\\.\\d{1,3})?)?$");
 
-  /*
-   *"(\\+|\\-)?\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{1,3}$";
-   *"(\+|\-)?(\d{1,2}|(\d{1,2}:\d{1,2})|(\d{1,2}:){2}\d{1,2}(\.\d{1,3})?)";
-   *
-   **/
-
   private static final DateTimeFormatter OFFSET_FORMAT = ISODateTimeFormat.hourMinuteSecondMillis();
 
   /** if true, Locale.getScript() available. */
@@ -239,6 +233,15 @@ public final class Localizer {
     String localeID = StringUtils.join(localeArgs, ",").replaceAll("_,_$", "__").replaceAll("_?,_?", "_").replaceAll("_+$", "");
     if (!LOCALE_SCRIPTABLE) localeID = localeID.replaceAll("_#.*$", "");
     if (LazyInitializer.AVAILABLE_LOCALES.containsKey(localeID)) return LazyInitializer.AVAILABLE_LOCALES.get(localeID);
+
     return Locale.ROOT;
+  }
+
+  public static Locale[] getAvailableLocales() {
+    return LazyInitializer.AVAILABLE_LOCALES.values().toArray(new Locale[] {});
+  }
+
+  public static String[] getAvailableZoneIDs() {
+    return LazyInitializer.AVAILABLE_ZONE_IDS.toArray(new String[] {});
   }
 }

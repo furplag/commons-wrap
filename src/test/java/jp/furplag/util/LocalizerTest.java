@@ -20,8 +20,11 @@
 package jp.furplag.util;
 
 import static jp.furplag.util.Localizer.getAvailableLocale;
+import static jp.furplag.util.Localizer.getAvailableLocales;
+import static jp.furplag.util.Localizer.getAvailableZoneIDs;
 import static jp.furplag.util.Localizer.getDateTimeZone;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Locale;
 import java.util.TimeZone;
@@ -170,5 +173,15 @@ public class LocalizerTest {
       assertEquals("id : [" + locale.toString() + "]", locale.getDisplayName(Locale.ROOT), actual.getDisplayName(Locale.ROOT));
       assertEquals("id : [" + locale.toString() + "](localized)", locale.getDisplayName(), actual.getDisplayName());
     }
+  }
+
+  @Test
+  public final void testGetAvailableLocales() {
+    assertNotNull(getAvailableLocales());
+  }
+
+  @Test
+  public final void testGetAvailableZoneIDs() {
+    assertNotNull(getAvailableZoneIDs());
   }
 }

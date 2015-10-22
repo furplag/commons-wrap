@@ -37,98 +37,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * Shorthand for {@code java.lang.String.replaceAll(regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateAll(final String str, final String regex) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
-
-    return str.replaceAll(regex, EMPTY);
-  }
-
-  /**
-   * Shorthand for {@code java.lang.String.replaceFirst(regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateFirst(final String str, final String regex) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
-
-    return str.replaceFirst(regex, EMPTY);
-  }
-
-  /**
-   * Shorthand for {@code replaceLast(str, regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateLast(final String str, final String regex) {
-    return replaceLast(str, regex, EMPTY);
-  }
-
-  /**
-   * java.lang.String.replaceAll against null.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @param replacement the string to be substituted for each match.
-   * @return the resulting String.
-   */
-  public static String replaceAll(final String str, final String regex, final String replacement) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
-
-    return str.replaceAll(regex, defaultString(replacement));
-  }
-
-  /**
-   * replaces the last substring of this string that matches the given regular expression with the given replacement.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @param replacement the string to be substituted for each match.
-   * @return the resulting String.
-   */
-  public static String replaceLast(final String str, final String regex, final String replacement) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
-
-    return str.replaceFirst("(?s)(.*)" + defaultString(regex), "$1" + defaultString(replacement));
-  }
-
-  /**
-   * returns the length of this string.
-   * <p>
-   * The length is equal to the number of Unicode code points in the string.
-   * </p>
-   *
-   * <pre>
-   * StringUtils.length(null)   = 0
-   * StringUtils.length("")     = 0
-   * StringUtils.length("\r\n") = 2
-   * StringUtils.length("X")    = 1
-   * StringUtils.length("д")   = 1
-   * StringUtils.length("髭")   = 1
-   * StringUtils.length("𩸽")   = 1 :"𩸽" U+29E3D(&#171581)
-   * </pre>
-   *
-   * @param str the string, may be null.
-   * @return the length of the sequence of characters represented by this object.
-   */
-  public static int length(final String str) {
-    return getCodePoints(defaultString(str)).length;
-  }
-
-  /**
    * returns the byte length of this string.
    *
    * <pre>
@@ -155,114 +63,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the character at index <code>endIndex - 1</code>. Thus the length of the substring is <code>endIndex-beginIndex</code>.
-   *
-   * <pre>
-   * StringUtils.substringUCL(null, *, *)    = ""
-   * StringUtils.substringUCL("", * ,  *)    = ""
-   * StringUtils.substringUCL("abc", 0, 2)   = "ab"
-   * StringUtils.substringUCL("abc", 2, 0)   = ""
-   * StringUtils.substringUCL("abc", 2, 4)   = "c"
-   * StringUtils.substringUCL("abc", 4, 6)   = ""
-   * StringUtils.substringUCL("abc", 2, 2)   = ""
-   * StringUtils.substringUCL("abc", -2, -1) = "b"
-   * StringUtils.substringUCL("abc", -4, 2)  = "ab"
-   * </pre>
-   *
-   * @param str the string to get the substring from, may be null.
-   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
-   * @param endIndex the position to end at (exclusive), negative means count back from the end of the String by this many characters.
-   * @return substring from start position to end position, return empty if null.
-   */
-  public static String substringUCL(final String str, final int beginIndex, final int endIndex) {
-    int[] codePoints = getCodePoints(defaultString(str));
-    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
-    if (begin < 0) begin = 0;
-    int end = (endIndex < 0 ? codePoints.length : 0) + endIndex;
-    if (end > codePoints.length) end = codePoints.length;
-    if (end < 0) end = 0;
-    if (begin > end) return EMPTY;
-
-    StringBuilder sb = new StringBuilder();
-    for (int codePoint : Arrays.copyOfRange(codePoints, begin, end)) {
-      sb.appendCodePoint(codePoint);
-    }
-
-    return sb.toString();
-  }
-
-  /**
-   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the string at <code>byteLen</code> bytes length.
-   *
-   * <pre>
-   * StringUtils.substringUBL(null, *, *)    = ""
-   * StringUtils.substringUBL("", * ,  *)    = ""
-   * StringUtils.substringUBL("abc", 0, 2)   = "ab"
-   * StringUtils.substringUBL("abc", 2, 0)   = ""
-   * StringUtils.substringUBL("abc", 2, 4)   = "c"
-   * StringUtils.substringUBL("abc", 4, 6)   = ""
-   * StringUtils.substringUBL("abc", 2, 2)   = "c"
-   * StringUtils.substringUBL("abc", -2, -1) = "b"
-   * StringUtils.substringUBL("abc", -4, 2)  = "ab"
-   * </pre>
-   *
-   * @param str the string to get the substring from, may be null.
-   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
-   * @param byteLen the byte length to end at (exclusive), return empty if negative.
-   * @return substring from start position to end position, return empty if null.
-   * @exception IllegalArgumentException if a character that is more than <code>byteLen</code> bytes in the string is present
-   */
-  public static String substringUBL(final String str, final int beginIndex, final int byteLen) {
-    if (byteLen < 1) return EMPTY;
-    String temporary = defaultString(str);
-    int[] codePoints = getCodePoints(temporary);
-    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
-    if (begin < 0) begin = 0;
-    if (begin > codePoints.length) return EMPTY;
-
-    StringBuilder sb = new StringBuilder();
-    int subLen = 0;
-    for (int codePoint : Arrays.copyOfRange(codePoints, begin, codePoints.length)) {
-      StringBuilder internalSb = new StringBuilder().appendCodePoint(codePoint);
-      int internalSbLen = byteLength(internalSb.toString());
-      if (internalSbLen > byteLen) throw new IllegalArgumentException("byteLen too small even for \"" + internalSb + "\".");
-      if (subLen + internalSbLen > byteLen) break;
-      sb.appendCodePoint(codePoint);
-      subLen += internalSbLen;
-    }
-
-    return sb.toString();
-  }
-
-  /**
-   * return Array of strings that can fit in the specified number of bytes in the <code>byteLen</code>.
-   *
-   * <pre>
-   * StringUtils.splitUBL(null, *)    = []
-   * StringUtils.splitUBL("", *)      = []
-   * StringUtils.splitUBL("abc", 0)   = []
-   * StringUtils.splitUBL("abc", 1)   = ["a", "b", "c"]
-   * StringUtils.splitUBL("abc", 2)   = ["ab", "c"]
-   * StringUtils.splitUBL("abc", 4)   = ["abc"]
-   * StringUtils.splitUBL("abc", -1)  = []
-   * </pre>
+   * returns a copy of the lower case string, with whitespace and full-width space omitted.
    *
    * @param str the string, may be null.
-   * @param byteLen the byte length to end at (exclusive), return empty if negative.
-   * @return array of strings that can fit in the specified number of bytes in the <code>byteLen</code>
+   * @return the lower case string, with whitespace and full-width space omitted.
    */
-  public static String[] splitUBL(final String str, final int byteLen) {
-    String temporary = defaultString(str);
-    int[] codePoints = getCodePoints(temporary);
-    List<String> splits = new ArrayList<String>();
-    for (int i = 0, next = 0; i < codePoints.length; i += next) {
-      if (codePoints.length < 1) break;
-      if (byteLen < 1) break;
-      splits.add(substringUBL(temporary, i, byteLen));
-      next = length(splits.get(splits.size() - 1));
-    }
-
-    return splits.toArray(new String[] {});
+  public static String flatten(final String str) {
+    return trim(str, true).toLowerCase().replaceAll("\\s", EMPTY);
   }
 
   /**
@@ -281,6 +88,24 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     return ret;
+  }
+
+  /**
+   * checks if a String is whitespace, full-width space, empty (""), newline ((CR)?LF) or null.
+   *
+   * <pre>
+   * StringUtils.isSimilarToBlank(null)      = true
+   * StringUtils.isSimilarToBlank("")        = true
+   * StringUtils.isSimilarToBlank(" ")       = true
+   * StringUtils.isSimilarToBlank("bob")     = false
+   * StringUtils.isSimilarToBlank("  bob  ") = false
+   * </pre>
+   *
+   * @param str the string to check, may be null.
+   * @return return true if the String is null, empty, newline or whitespace.
+   */
+  public static boolean isSimilarToBlank(final String str) {
+    return defaultString(str).replaceAll("[\\s\\r\\n\\t　]", EMPTY).length() == 0;
   }
 
   /**
@@ -354,21 +179,26 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * checks if a String is whitespace, full-width space, empty (""), newline ((CR)?LF) or null.
+   * returns the length of this string.
+   * <p>
+   * The length is equal to the number of Unicode code points in the string.
+   * </p>
    *
    * <pre>
-   * StringUtils.isSimilarToBlank(null)      = true
-   * StringUtils.isSimilarToBlank("")        = true
-   * StringUtils.isSimilarToBlank(" ")       = true
-   * StringUtils.isSimilarToBlank("bob")     = false
-   * StringUtils.isSimilarToBlank("  bob  ") = false
+   * StringUtils.length(null)   = 0
+   * StringUtils.length("")     = 0
+   * StringUtils.length("\r\n") = 2
+   * StringUtils.length("X")    = 1
+   * StringUtils.length("д")   = 1
+   * StringUtils.length("髭")   = 1
+   * StringUtils.length("𩸽")   = 1 :"𩸽" U+29E3D(&#171581)
    * </pre>
    *
-   * @param str the string to check, may be null.
-   * @return return true if the String is null, empty, newline or whitespace.
+   * @param str the string, may be null.
+   * @return the length of the sequence of characters represented by this object.
    */
-  public static boolean isSimilarToBlank(final String str) {
-    return defaultString(str).replaceAll("[\\s\\r\\n\\t　]", EMPTY).length() == 0;
+  public static int length(final String str) {
+    return getCodePoints(defaultString(str)).length;
   }
 
   /**
@@ -432,6 +262,147 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
+   * java.lang.String.replaceAll against null.
+   *
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @param replacement the string to be substituted for each match.
+   * @return the resulting String.
+   */
+  public static String replaceAll(final String str, final String regex, final String replacement) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceAll(regex, defaultString(replacement));
+  }
+
+  /**
+   * replaces the last substring of this string that matches the given regular expression with the given replacement.
+   *
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @param replacement the string to be substituted for each match.
+   * @return the resulting String.
+   */
+  public static String replaceLast(final String str, final String regex, final String replacement) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceFirst("(?s)(.*)" + defaultString(regex), "$1" + defaultString(replacement));
+  }
+
+  /**
+   * return Array of strings that can fit in the specified number of bytes in the <code>byteLen</code>.
+   *
+   * <pre>
+   * StringUtils.splitUBL(null, *)    = []
+   * StringUtils.splitUBL("", *)      = []
+   * StringUtils.splitUBL("abc", 0)   = []
+   * StringUtils.splitUBL("abc", 1)   = ["a", "b", "c"]
+   * StringUtils.splitUBL("abc", 2)   = ["ab", "c"]
+   * StringUtils.splitUBL("abc", 4)   = ["abc"]
+   * StringUtils.splitUBL("abc", -1)  = []
+   * </pre>
+   *
+   * @param str the string, may be null.
+   * @param byteLen the byte length to end at (exclusive), return empty if negative.
+   * @return array of strings that can fit in the specified number of bytes in the <code>byteLen</code>
+   */
+  public static String[] splitUBL(final String str, final int byteLen) {
+    String temporary = defaultString(str);
+    int[] codePoints = getCodePoints(temporary);
+    List<String> splits = new ArrayList<String>();
+    for (int i = 0, next = 0; i < codePoints.length; i += next) {
+      if (codePoints.length < 1) break;
+      if (byteLen < 1) break;
+      splits.add(substringUBL(temporary, i, byteLen));
+      next = length(splits.get(splits.size() - 1));
+    }
+
+    return splits.toArray(new String[] {});
+  }
+
+  /**
+   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the string at <code>byteLen</code> bytes length.
+   *
+   * <pre>
+   * StringUtils.substringUBL(null, *, *)    = ""
+   * StringUtils.substringUBL("", * ,  *)    = ""
+   * StringUtils.substringUBL("abc", 0, 2)   = "ab"
+   * StringUtils.substringUBL("abc", 2, 0)   = ""
+   * StringUtils.substringUBL("abc", 2, 4)   = "c"
+   * StringUtils.substringUBL("abc", 4, 6)   = ""
+   * StringUtils.substringUBL("abc", 2, 2)   = "c"
+   * StringUtils.substringUBL("abc", -2, -1) = "b"
+   * StringUtils.substringUBL("abc", -4, 2)  = "ab"
+   * </pre>
+   *
+   * @param str the string to get the substring from, may be null.
+   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
+   * @param byteLen the byte length to end at (exclusive), return empty if negative.
+   * @return substring from start position to end position, return empty if null.
+   * @exception IllegalArgumentException if a character that is more than <code>byteLen</code> bytes in the string is present
+   */
+  public static String substringUBL(final String str, final int beginIndex, final int byteLen) {
+    if (byteLen < 1) return EMPTY;
+    String temporary = defaultString(str);
+    int[] codePoints = getCodePoints(temporary);
+    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
+    if (begin < 0) begin = 0;
+    if (begin > codePoints.length) return EMPTY;
+
+    StringBuilder sb = new StringBuilder();
+    int subLen = 0;
+    for (int codePoint : Arrays.copyOfRange(codePoints, begin, codePoints.length)) {
+      StringBuilder internalSb = new StringBuilder().appendCodePoint(codePoint);
+      int internalSbLen = byteLength(internalSb.toString());
+      if (internalSbLen > byteLen) throw new IllegalArgumentException("byteLen too small even for \"" + internalSb + "\".");
+      if (subLen + internalSbLen > byteLen) break;
+      sb.appendCodePoint(codePoint);
+      subLen += internalSbLen;
+    }
+
+    return sb.toString();
+  }
+
+  /**
+   * returns a new string that is a substring of this string. The substring begins at the specified <code>beginIndex</code> and extends to the character at index <code>endIndex - 1</code>. Thus the length of the substring is <code>endIndex-beginIndex</code>.
+   *
+   * <pre>
+   * StringUtils.substringUCL(null, *, *)    = ""
+   * StringUtils.substringUCL("", * ,  *)    = ""
+   * StringUtils.substringUCL("abc", 0, 2)   = "ab"
+   * StringUtils.substringUCL("abc", 2, 0)   = ""
+   * StringUtils.substringUCL("abc", 2, 4)   = "c"
+   * StringUtils.substringUCL("abc", 4, 6)   = ""
+   * StringUtils.substringUCL("abc", 2, 2)   = ""
+   * StringUtils.substringUCL("abc", -2, -1) = "b"
+   * StringUtils.substringUCL("abc", -4, 2)  = "ab"
+   * </pre>
+   *
+   * @param str the string to get the substring from, may be null.
+   * @param beginIndex the position to start from, negative means count back from the end of the String by this many characters.
+   * @param endIndex the position to end at (exclusive), negative means count back from the end of the String by this many characters.
+   * @return substring from start position to end position, return empty if null.
+   */
+  public static String substringUCL(final String str, final int beginIndex, final int endIndex) {
+    int[] codePoints = getCodePoints(defaultString(str));
+    int begin = (beginIndex < 0 ? codePoints.length : 0) + beginIndex;
+    if (begin < 0) begin = 0;
+    int end = (endIndex < 0 ? codePoints.length : 0) + endIndex;
+    if (end > codePoints.length) end = codePoints.length;
+    if (end < 0) end = 0;
+    if (begin > end) return EMPTY;
+
+    StringBuilder sb = new StringBuilder();
+    for (int codePoint : Arrays.copyOfRange(codePoints, begin, end)) {
+      sb.appendCodePoint(codePoint);
+    }
+
+    return sb.toString();
+  }
+
+  /**
    * returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
    *
    * @param str the string, may be null.
@@ -455,12 +426,41 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   }
 
   /**
-   * returns a copy of the lower case string, with whitespace and full-width space omitted.
+   * Shorthand for {@code java.lang.String.replaceAll(regex, "")}.
    *
    * @param str the string, may be null.
-   * @return the lower case string, with whitespace and full-width space omitted.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
    */
-  public static String flatten(final String str) {
-    return trim(str, true).toLowerCase().replaceAll("\\s", EMPTY);
+  public static String truncateAll(final String str, final String regex) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceAll(regex, EMPTY);
+  }
+
+  /**
+   * Shorthand for {@code java.lang.String.replaceFirst(regex, "")}.
+   *
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
+   */
+  public static String truncateFirst(final String str, final String regex) {
+    if (isSimilarToBlank(str)) return str;
+    if (isBlank(regex)) return str;
+
+    return str.replaceFirst(regex, EMPTY);
+  }
+
+  /**
+   * Shorthand for {@code replaceLast(str, regex, "")}.
+   *
+   * @param str the string, may be null.
+   * @param regex the regular expression to which this string is to be matched.
+   * @return the resulting String.
+   */
+  public static String truncateLast(final String str, final String regex) {
+    return replaceLast(str, regex, EMPTY);
   }
 }
