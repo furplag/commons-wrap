@@ -21,7 +21,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ObjectUtils.Null;
@@ -334,15 +336,37 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return setScale(o, scale, RoundingMode.CEILING, type);
   }
 
-  /**
-   * normalize the angle out the range of 0&deg; to 360&deg;.
-   *
-   * @param n
-   * @return
-   */
-  public static <T extends Number> T circulate(final T n) {
-    return normalize(n, 0, 360);
+  public static double circulate(final double n) {
+    if (0 <= n && n <= 360) return n == 360 ? 0 : n;
+    double modulo = n;
+    while (!(0 <= modulo && modulo <= 360)) {
+      modulo += (modulo < 0 ? 360 : -360);
+    }
+
+    return modulo;
   }
+
+  public static double circulate(final double n, final double limit) {
+    if (0 <= n && n <= limit) return n;
+    double modulo = n;
+    while (!(0 <= modulo && modulo <= 360)) {
+      modulo += (modulo < 0 ? 360 : -360);
+    }
+
+    return modulo;
+  }
+
+//  if (0 <= n && n < limit) return n;
+//    if ((limit < 0 ? -limit : limit) != (long) (limit < 0 ? -limit : limit)) {
+//      double modulo = n;
+//      while (!(0 <= n && n < limit)) {
+//
+//      }
+//    }
+//    double angleN = (long) (angle < 0 ? -angle : angle);
+//    double angleF = (angle < 0 ? -angle : angle) - angleN;
+//    double modulo = angleN % 360d;
+//  }
 
   /**
    * {@code n.compareTo(another)}.
@@ -396,7 +420,7 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @return {@code Math.cos(Math.toRadians(angle))}.
    */
   public static double cos(long angle) {
-    return cos((Number) angle);
+    return cos((Long) angle);
   }
 
   /**
@@ -417,7 +441,60 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @return {@code Math.cos(angle)}.
    */
   public static double cos(Number angle, boolean isRadians) {
-    return Math.cos(isRadians ? valueOf(angle, double.class) : toRadians(angle));
+    return Math.cos(valueOf(isRadians ? angle : toRadians(angle), double.class));
+  }
+
+  /** for cosine of BigDecimal. */
+  private static final List<BigDecimal> COSINE_FACTOR_DECIMAL128 = initCosineFactor(MathContext.DECIMAL128);
+
+  /**
+   * generate cosine factor for trigonometric functions in BigDecimal.
+   *
+   * @param mc {@link java.math.MathContext}.
+   * @return list of cosine factors.
+   */
+  private static List<BigDecimal> initCosineFactor(MathContext mc) {
+    int precision = (mc == null ? MathContext.DECIMAL128 : mc).getPrecision();
+    List<BigDecimal> factors = new ArrayList<BigDecimal>();
+    BigDecimal divisor = BigDecimal.valueOf(2d);
+    BigDecimal temporary = BigDecimal.valueOf(2d);
+    do {
+      factors.add(BigDecimal.ONE.divide(divisor, precision + 2, RoundingMode.HALF_UP));
+      temporary = temporary.add(BigDecimal.ONE);
+      divisor = divisor.multiply(temporary);
+      temporary = temporary.add(BigDecimal.ONE);
+      divisor = divisor.multiply(temporary);
+    } while (factors.get(factors.size() - 1).compareTo(new BigDecimal("1E-" + (precision + 2))) > 0);
+
+    return factors;
+  }
+
+  /**
+   * {@link Math#cos(double)} in {@link java.math.BigDecimal}.
+   *
+   * @param angle the angle represented by radians.
+   * @param isRadians if false, the angle represented by degrees.
+   * @return
+   */
+  public static BigDecimal cos(final BigDecimal n, boolean isRadians) {
+    return cos(n, MathContext.DECIMAL128, isRadians);
+  }
+
+  public static BigDecimal cos(final BigDecimal angle, MathContext mc, boolean isRadians) {
+    if (angle == null) return null;
+    BigDecimal cos = BigDecimal.ONE;
+    BigDecimal radians = isRadians ? angle : valueOf(toRadians(angle), BigDecimal.class);
+    BigDecimal nSquare = radians.pow(2);
+    int index = 0;
+    for (BigDecimal factor : COSINE_FACTOR_DECIMAL128) {
+      BigDecimal temporary = factor.multiply(nSquare);
+      if (index % 2 == 0) temporary = temporary.negate();
+      cos = cos.add(temporary);
+      nSquare = nSquare.multiply(radians.pow(2)).setScale(((mc == null ? MathContext.DECIMAL128 : mc).getPrecision() + 2), RoundingMode.HALF_UP);
+      index++;
+    }
+
+    return cos.setScale((mc == null ? MathContext.DECIMAL128 : mc).getPrecision(), RoundingMode.HALF_UP);
   }
 
   /**
@@ -634,44 +711,88 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
     return NumberObject.of(type).valueOf(valueOf(n, BigDecimal.class).multiply(valueOf(multiplicand, BigDecimal.class)));
   }
 
-  /**
-   * normalize the value if not range in {@code minimum} to {@code maximum}.
-   *
-   * @param n a number, may be null.
-   * @param minimum lower limit of range. null means zero.
-   * @param maximum upper limit of range. null means zero.
-   * @return the value in range between minimum and maximum.
-   */
-  public static <T extends Number> T normalize(final T n, final Number minimum, final Number maximum) {
-    return normalize(n, minimum, maximum, getClass(n));
+  // /**
+  // * normalize the value if not range in {@code minimum} to {@code maximum}.
+  // *
+  // * @param n a number, may be null.
+  // * @param minimum lower limit of range. null means zero.
+  // * @param maximum upper limit of range. null means zero.
+  // * @return the value in range between minimum and maximum.
+  // */
+  // public static <T extends Number> T normalize(final T n, final Number minimum, final Number maximum) {
+  // return normalize(n, minimum, maximum, getClass(n));
+  //
+  // }
 
+//  /**
+//   * normalize the value if not range in {@code minimum} to {@code maximum}.
+//   *
+//   * @param o the object, number or string.
+//   * @param minimum lower limit of range. null means zero.
+//   * @param maximum upper limit of range. null means zero.
+//   * @param type return type.
+//   * @return the value in range between minimum and maximum.
+//   */
+//  public static <T extends Number> T normalize(final Object o, final Number minimum, final Number maximum, final Class<T> type) {
+//    if (type == null) return null;
+//    NumberObject nO = NumberObject.of(type);
+//    Number n = valueOf(o);
+//    if (n == null) return nO.valueOf(null);
+//    if (isNaN(n)) return nO.valueOf(n);
+//    if (minimum == null && maximum == null) return nO.valueOf(n);
+//    if (minimum == null && maximum == null) return nO.valueOf(n);
+//    if (compareTo(minimum, maximum) == 0) return nO.valueOf(minimum == null ? maximum == null ? n : maximum : minimum);
+//    if (isInfinite(minimum) && isInfinite(maximum)) return nO.valueOf(n);
+//    Range<BigDecimal> range = Range.between(minimum == null ? BigDecimal.ZERO : valueOf(minimum, BigDecimal.class), maximum == null ? BigDecimal.ZERO : valueOf(maximum, BigDecimal.class));
+//    BigDecimal nB = valueOf(n, BigDecimal.class);
+//    if (nB.compareTo(range.getMaximum()) == 0) return nO.valueOf(range.getMinimum());
+//    if (range.contains(nB)) return nO.valueOf(nB);
+//
+//    return nO.valueOf((nB.subtract(range.getMinimum()).remainder(range.getMaximum().subtract(range.getMinimum()), MathContext.UNLIMITED)).add(nB.compareTo(range.getMaximum()) > 0 ? range.getMinimum() : range.getMaximum()));
+//  }
+//
+//  public static double normalize(final double n, final double fromInclusive, final double toInclusive) {
+//    return normalize(n, fromInclusive, toInclusive, false);
+//  }
+//
+//  public static int normalize(final int n, final int fromInclusive, final int toInclusive) {
+//    return (int) normalize((double) n, fromInclusive, toInclusive, false);
+//  }
+//
+//  public static double normalize(final double n, final double fromInclusive, final double toInclusive, boolean minimize) {
+//    Range<Double> range = Range.between(fromInclusive, toInclusive);
+//    if (n == 0 && range.getMinimum() == 1) return
+//    double modulo = normalize(n - range.getMinimum(), range.getMaximum() - range.getMinimum());
+//
+//    return modulo + range.getMinimum();
+//    // double min = range.getMinimum();
+//    // double max = range.getMaximum();
+//    // if (range.contains(n)) return minimize && n == max ? min : n;
+//    // if (min == 0) {
+//    //
+//    // }
+//    // double modulo = n - min;
+//    // range = Range.between(0d, range.getMaximum() - range.getMinimum());
+//    // double divisor = range.getMaximum() + 1;
+//    // while (!range.contains(modulo)) {
+//    // modulo += (modulo < 0 ? divisor : -divisor);
+//    // }
+//    // modulo += min;
+//    //
+//    // return minimize && modulo == max ? min : modulo;
+//  }
+
+  private static double normalize(final double n, final double limit) {
+    if (0 <= n && n <= limit) return n;
+    double modulo = n;
+    while (!(0 <= modulo && modulo <= limit)) {
+      modulo += (modulo < 0 ? limit : -limit);
+    }
+
+    return modulo == 0 ? limit : modulo;
   }
 
-  /**
-   * normalize the value if not range in {@code minimum} to {@code maximum}.
-   *
-   * @param o the object, number or string.
-   * @param minimum lower limit of range. null means zero.
-   * @param maximum upper limit of range. null means zero.
-   * @param type return type.
-   * @return the value in range between minimum and maximum.
-   */
-  public static <T extends Number> T normalize(final Object o, final Number minimum, final Number maximum, final Class<T> type) {
-    if (type == null) return null;
-    NumberObject nO = NumberObject.of(type);
-    Number n = valueOf(o);
-    if (n == null) return nO.valueOf(null);
-    if (isNaN(n)) return nO.valueOf(n);
-    if (minimum == null && maximum == null) return nO.valueOf(n);
-    if (minimum == null && maximum == null) return nO.valueOf(n);
-    if (compareTo(minimum, maximum) == 0) return nO.valueOf(minimum == null ? maximum == null ? n : maximum : minimum);
-    if (isInfinite(minimum) && isInfinite(maximum)) return nO.valueOf(n);
-    Range<BigDecimal> range = Range.between(minimum == null ? BigDecimal.ZERO : valueOf(minimum, BigDecimal.class), maximum == null ? BigDecimal.ZERO : valueOf(maximum, BigDecimal.class));
-    BigDecimal nB = valueOf(n, BigDecimal.class);
-    if (nB.compareTo(range.getMaximum()) == 0) return nO.valueOf(range.getMinimum());
-    if (range.contains(nB)) return nO.valueOf(nB);
-
-    return nO.valueOf((nB.subtract(range.getMinimum()).remainder(range.getMaximum().subtract(range.getMinimum()), MathContext.UNLIMITED)).add(nB.compareTo(range.getMaximum()) > 0 ? range.getMinimum() : range.getMaximum()));
+  public static void main(String[] args) {
   }
 
   /**
@@ -803,7 +924,7 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @param radians
    * @return the angle represented by specified radian.
    */
-  public static <T extends Number> double toDegrees(final Number radians) {
+  public static double toDegrees(final Number radians) {
     if (Float.class.equals(NumberObject.of(radians).wrapper)) return Math.toDegrees(valueOf(radians, float.class));
 
     return valueOf(radians, double.class) * 180d / Math.PI;
@@ -815,7 +936,7 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
    * @param degrees
    * @return the radian represented by specified angle.
    */
-  public static <T extends Number> double toRadians(final Number degrees) {
+  public static double toRadians(final Number degrees) {
     if (Float.class.equals(NumberObject.of(degrees).wrapper)) return Math.toRadians(valueOf(degrees, float.class));
 
     return valueOf(degrees, double.class) / 180d * Math.PI;
@@ -887,7 +1008,8 @@ public final class NumberUtils extends org.apache.commons.lang3.math.NumberUtils
   }
 
   /**
-   * {@link org.apache.commons.lang3.math.NumberUtils#createNumber(String)}.
+   * TODO SLOW {@link org.apache.commons.lang3.math.NumberUtils#createNumber(String)}.
+   *
    * @param o the object, number or string.
    * @param type return type.
    * @param nonNull if true, return zero if o could not convertible to number.

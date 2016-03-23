@@ -187,9 +187,15 @@ public class ResourceUtils {
    * @return
    */
   private static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final Locale locale, final boolean printStackTrace) {
+    Locale defaultLocale = Locale.getDefault();
+    Locale.setDefault(Locale.ROOT);
+    String getString = "";
     try {
-      return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(ResourceBundle.getBundle(StringUtils.defaultString(baseName), locale == null ? Locale.ROOT : locale).getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
-    } catch (MissingResourceException e) {
+      getString = StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(ResourceBundle.getBundle(StringUtils.defaultString(baseName), locale == null ? Locale.ROOT : locale).getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+      Locale.setDefault(defaultLocale);
+
+      return getString;
+    } catch (Exception e) {
       if (printStackTrace) e.printStackTrace();
     }
 
