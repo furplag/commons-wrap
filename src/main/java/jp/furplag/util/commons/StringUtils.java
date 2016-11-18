@@ -310,16 +310,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    */
   public static String[] splitUBL(final String str, final int byteLen) {
     String temporary = defaultString(str);
-    int[] codePoints = getCodePoints(temporary);
     List<String> splits = new ArrayList<String>();
-    for (int i = 0, next = 0; i < codePoints.length; i += next) {
-      if (codePoints.length < 1) break;
-      if (byteLen < 1) break;
-      splits.add(substringUBL(temporary, i, byteLen));
-      next = length(splits.get(splits.size() - 1));
+    if (byteLen > 0) {
+      for (int i = 0, next = 0; i < getCodePoints(temporary).length; i += next) {
+        splits.add(substringUBL(temporary, i, byteLen));
+        next = length(splits.get(splits.size() - 1));
+      }
     }
 
-    return splits.toArray(new String[] {});
+    return splits.toArray(new String[splits.size()]);
   }
 
   /**
