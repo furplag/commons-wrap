@@ -32,7 +32,6 @@ import org.joda.time.format.ISODateTimeFormat;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import jp.furplag.util.commons.NumberUtils;
 import jp.furplag.util.commons.ObjectUtils;
 import jp.furplag.util.commons.StringUtils;
 
@@ -113,6 +112,7 @@ public final class Localizer {
       map.put("SystemV/YST9YDT", "America/Anchorage");
       map.put("EST", "America/New_York");
       map.put("MST", "America/Denver");
+      map.put("America/Fort_Nelson", "PST");
 
       return ImmutableMap.copyOf(map);
     }
@@ -160,7 +160,7 @@ public final class Localizer {
     if (zone == null) return DateTimeZone.getDefault();
     if (zone instanceof DateTimeZone) return (DateTimeZone) zone;
     if (zone instanceof TimeZone) return getDateTimeZone((TimeZone) zone);
-    if (ObjectUtils.isAny(zone.getClass(), Byte.class, Short.class, Integer.class, Long.class)) return getDateTimeZone(NumberUtils.valueOf(zone.toString(), Long.class));
+    if (ObjectUtils.isAny(zone.getClass(), Byte.class, Short.class, Integer.class, Long.class)) return getDateTimeZone(Long.valueOf(zone.toString()));
     if (zone instanceof String) return getDateTimeZone(zone.toString());
 
     return DateTimeZone.UTC;

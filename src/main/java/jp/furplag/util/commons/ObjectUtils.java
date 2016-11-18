@@ -17,7 +17,6 @@
 package jp.furplag.util.commons;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -35,7 +34,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import jp.furplag.util.RefrectionUtils;
+
 /**
+ * Operations on Object.
+ *
  * @see org.apache.commons.lang3.ObjectUtils
  * @author furplag
  */
@@ -68,52 +71,26 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
    *
    * @param type the Class object, return false if null.
    * @return empty instance of specified {@link java.lang.Class}.
-   * @throws IllegalArgumentException
    * @throws InstantiationException
-   * @throws IllegalAccessException
-   * @throws InvocationTargetException
-   * @throws ClassNotFoundException
-   * @throws NegativeArraySizeException
    */
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(final Class<T> type) throws InstantiationException {
     if (type == null) return null;
     if (type.isArray()) return (T) Array.newInstance(type.getComponentType(), 0);
     if (Void.class.equals(ClassUtils.primitiveToWrapper(type))) {
-      try {
-        Constructor<Void> c = Void.class.getDeclaredConstructor();
-        c.setAccessible(true);
-
-        return (T) c.newInstance();
-      } catch (SecurityException e) {} catch (NoSuchMethodException e) {} catch (InvocationTargetException e) {} catch (IllegalAccessException e) {}
-
-      return null;
+      return (T) newObject(Void.class);
     }
-
     if (type.isInterface()) {
       if (!Collection.class.isAssignableFrom(type)) throw new InstantiationException("could not create instance, the type \"" + type.getName() + "\" is an interface.");
       if (List.class.isAssignableFrom(type)) return (T) Lists.newArrayList();
       if (Map.class.isAssignableFrom(type)) return (T) Maps.newHashMap();
       if (Set.class.isAssignableFrom(type)) return (T) Sets.newHashSet();
     }
-
-    if (type.isPrimitive()) {
-      if (boolean.class.equals(type)) return (T) Boolean.FALSE;
-      if (char.class.equals(type)) return (T) Character.valueOf(Character.MIN_VALUE);
-
-      return (T) NumberUtils.valueOf("0", (Class<? extends Number>) type);
-    }
+    if (type.isPrimitive()) return newPrimitive(type);
     if (ClassUtils.isPrimitiveOrWrapper(type)) return null;
     if (Modifier.isAbstract(type.getModifiers())) throw new InstantiationException("could not create instance, the type \"" + type.getName() + "\" is an abstract class.");
 
-    try {
-      Constructor<?> c = type.getDeclaredConstructor();
-      c.setAccessible(true);
-
-      return (T) c.newInstance();
-    } catch (SecurityException e) {} catch (NoSuchMethodException e) {} catch (InvocationTargetException e) {} catch (IllegalAccessException e) {}
-
-    throw new InstantiationException("could not create instance, the default constructor of \"" + type.getName() + "()\" is not accessible ( or undefined ).");
+    return newObject(type);
   }
 
   /**
@@ -146,13 +123,32 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
         if (Map.class.isAssignableFrom(clazz)) return (T) Maps.newHashMap();
         if (Set.class.isAssignableFrom(clazz)) return (T) Sets.newHashSet();
       }
-      try {
-        return ((Class<T>) rawType).newInstance();
-      } catch (IllegalAccessException e) {}
 
-      throw new InstantiationException("could not create instance, the default constructor of \"" + ((Class<T>) rawType).getName() + "()\" is not accessible ( or undefined ).");
+      return newObject((Class<T>) rawType);
     }
     if (type instanceof Class) return newInstance((Class<T>) type);
+
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T newPrimitive(final Class<T> type) throws InstantiationException {
+    if (!type.isPrimitive()) return null;
+    if (void.class.equals(type)) return null;
+    if (boolean.class.equals(type)) return (T) Boolean.FALSE;
+    if (char.class.equals(type)) return (T) Character.valueOf(Character.MIN_VALUE);
+    Class<?> wrapper = ClassUtils.primitiveToWrapper(type);
+    if (Number.class.isAssignableFrom(wrapper)) {
+      return (T) (Number) RefrectionUtils.invoke(RefrectionUtils.getMethod(wrapper, "valueOf", String.class), null, "0");
+    }
+
+    throw new InstantiationException("could not create instance, the default constructor of \"" + type.getName() + "()\" is not accessible ( or undefined ).");
+  }
+
+  private static <T> T newObject(final Class<T> type) {
+    try {
+      return (T) RefrectionUtils.getConstructor(type).newInstance();
+    } catch (InstantiationException e) {} catch (IllegalAccessException e) {} catch (IllegalArgumentException e) {} catch (InvocationTargetException e) {}
 
     return null;
   }

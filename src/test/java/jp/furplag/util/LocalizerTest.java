@@ -19,12 +19,8 @@
 
 package jp.furplag.util;
 
-import static jp.furplag.util.Localizer.getAvailableLocale;
-import static jp.furplag.util.Localizer.getAvailableLocales;
-import static jp.furplag.util.Localizer.getAvailableZoneIDs;
-import static jp.furplag.util.Localizer.getDateTimeZone;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static jp.furplag.util.Localizer.*;
+import static org.junit.Assert.*;
 
 import java.util.Locale;
 import java.util.TimeZone;

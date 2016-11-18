@@ -29,12 +29,7 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
    * @return {@code for (Object o : objects) isPrimitiveOrWrapper(class of o)}.
    */
   public static boolean isPrimitiveOrWrappers(Object ... objects) {
-    if (objects == null || objects.length < 1) return false;
-    for (Object o : objects) {
-      if (!isPrimitiveOrWrapper(getClassLazy(o))) return false;
-    }
-
-    return true;
+    return isPrimitiveWrappers(false, objects);
   }
 
   /**
@@ -44,11 +39,23 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
    * @return {@code for (Object o : objects) isPrimitiveWrapper(class of o)}.
    */
   public static boolean isPrimitiveWrappers(Object ... objects) {
+    return isPrimitiveWrappers(true, objects);
+  }
+
+  /**
+   * {@link org.apache.commons.lang3.ClassUtils#isPrimitiveWrapper(Class)}.
+   *
+   * @param acceptWrapper use {@code org.apache.commons.lang3.ClassUtils.isPrimitiveWrapper(Class<?>)}
+   * @param objects objects. Class<?> or an Object.
+   * @return {@code for (Object o : objects) isPrimitiveWrapper(class of o)}.
+   */
+  private static boolean isPrimitiveWrappers(boolean strict, Object ... objects) {
     if (objects == null || objects.length < 1) return false;
     for (Object o : objects) {
-      if (!isPrimitiveWrapper(getClassLazy(o))) return false;
+      if (strict && !isPrimitiveWrapper(getClassLazy(o))) return false;
+      if (!strict && !isPrimitiveOrWrapper(getClassLazy(o))) return false;
     }
-
+    
     return true;
   }
 
