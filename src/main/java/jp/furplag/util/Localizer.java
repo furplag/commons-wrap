@@ -1,12 +1,9 @@
 /**
  * Copyright (C) 2015+ furplag (https://github.com/furplag/)
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +13,9 @@
 
 package jp.furplag.util;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -23,11 +23,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -45,20 +40,9 @@ public final class Localizer {
   /** a regular expression of timezone offsets. */
   private static final Pattern OFFSET = Pattern.compile("^(\\+|\\-)?\\d{1,2}((:\\d{1,2}){1,2}|(\\d{1,2}:){2}\\d{1,2}(\\.\\d{1,3})?)?$");
 
-  private static final DateTimeFormatter OFFSET_FORMAT = ISODateTimeFormat.hourMinuteSecondMillis();
+  private static final DateTimeFormatter OFFSET_FORMAT = DateTimeFormatter.ISO_LOCAL_TIME;
 
-  /** if true, Locale.getScript() available. */
-  private static final boolean LOCALE_SCRIPTABLE;
-
-  static {
-    boolean scriptable = false;
-    try {
-      Locale.class.getMethod("getScript");
-      scriptable = true;
-    } catch (NoSuchMethodException e) {}
-
-    LOCALE_SCRIPTABLE = scriptable;
-  }
+  public static final ZoneId UTC = ZoneId.of("Z");
 
   static final class LazyInitializer {
 
@@ -72,14 +56,10 @@ public final class Localizer {
       Map<String, Locale> map = new HashMap<String, Locale>();
       for (Locale locale : Locale.getAvailableLocales()) {
         map.put(locale.toString(), locale);
-        String localeArgs = StringUtils.join(new String[] { locale.getLanguage(), locale.getCountry(), locale.getVariant() }, "_");
+        String localeArgs = StringUtils.join(new String[]{locale.getLanguage(), locale.getCountry(), locale.getVariant()}, "_");
         if (locale.toString().equals(StringUtils.truncateLast(localeArgs, "_+$"))) continue;
         map.put(localeArgs, locale);
-        if (LOCALE_SCRIPTABLE && locale.toString().endsWith("#Latn")) map.put(locale.toString().replaceAll("^" + locale.getLanguage() + "_" + locale.getCountry(), locale.getLanguage() + "_" + locale.getCountry() + "_"), locale);
-      }
-      if (!LOCALE_SCRIPTABLE) {
-        map.put("ja_JP_JP_#u-ca-japanese", map.get("ja_JP_JP"));
-        map.put("th_TH_TH_#u-nu-thai", map.get("th_TH_TH"));
+        if (locale.toString().endsWith("#Latn")) map.put(locale.toString().replaceAll("^" + locale.getLanguage() + "_" + locale.getCountry(), locale.getLanguage() + "_" + locale.getCountry() + "_"), locale);
       }
 
       return ImmutableMap.copyOf(map);
@@ -91,6 +71,7 @@ public final class Localizer {
 
     private static Map<String, String> initializeZoneDuprecated() {
       Map<String, String> map = new HashMap<String, String>();
+      map.putAll(ZoneId.SHORT_IDS);
       map.put("Asia/Riyadh87", "+03:07:04");
       map.put("Asia/Riyadh88", "+03:07:04");
       map.put("Asia/Riyadh89", "+03:07:04");
@@ -103,7 +84,7 @@ public final class Localizer {
       map.put("SystemV/CST6CDT", "America/Chicago");
       map.put("SystemV/EST5", "Etc/GMT+5");
       map.put("SystemV/EST5EDT", "America/New_York");
-      map.put("SystemV/HST10", "HST");
+      map.put("SystemV/HST10", "Etc/GMT+10");
       map.put("SystemV/MST7", "Etc/GMT+7");
       map.put("SystemV/MST7MDT", "America/Denver");
       map.put("SystemV/PST8", "Etc/GMT+8");
@@ -112,7 +93,6 @@ public final class Localizer {
       map.put("SystemV/YST9YDT", "America/Anchorage");
       map.put("EST", "America/New_York");
       map.put("MST", "America/Denver");
-      map.put("America/Fort_Nelson", "PST");
 
       return ImmutableMap.copyOf(map);
     }
@@ -124,83 +104,83 @@ public final class Localizer {
   private Localizer() {}
 
   /**
-   * create {@link DateTimeZone}.
+   * create {@link ZoneId}.
    *
    * <pre>
-   * newDateTimeZone(null) = DateTimeZone.getDefault()
-   * newDateTimeZone("") = DateTimeZone.UTC
-   * newDateTimeZone(9) = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
-   * newDateTimeZone(-9) = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newDateTimeZone("9") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
-   * newDateTimeZone("-9") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newDateTimeZone("Etc/GMT-9") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newDateTimeZone("Etc/GMT-9") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * newZoneId(null) = ZoneId.getDefault()
+   * newZoneId("") = ZoneId.UTC
+   * newZoneId(9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * newZoneId(-9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * newZoneId("9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * newZoneId("-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * newZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * newZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
    * </pre>
    * <p>
    * fallback to similar timezone if deprecated time zone specified.
    * </p>
    *
    * <pre>
-   * newDateTimeZone("SystemV/EST5") = DateTimeZone.forID("Etc/GMT+5")
-   * newDateTimeZone("Mideast/Riyadh87") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
+   * newZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
+   * newZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
    * </pre>
    * <p>
    * minutes, millis also specifiable.
    * </p>
    *
    * <pre>
-   * newDateTimeZone("SystemV/EST5") = DateTimeZone.forID("Etc/GMT+5")
-   * newDateTimeZone("Mideast/Riyadh87") = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
+   * newZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
+   * newZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
    * </pre>
    *
-   * @param zone timezone ( {@link String}, {@link TimeZone}, and {@link DateTimeZone} specifiable ). Use default if null.
-   * @return a {@link DateTimeZone} instance for the specified timezone.
+   * @param zone timezone ( {@link String}, {@link TimeZone}, and {@link ZoneId} specifiable ). Use default if null.
+   * @return a {@link ZoneId} instance for the specified timezone.
    */
-  public static DateTimeZone getDateTimeZone(final Object zone) {
-    if (zone == null) return DateTimeZone.getDefault();
-    if (zone instanceof DateTimeZone) return (DateTimeZone) zone;
-    if (zone instanceof TimeZone) return getDateTimeZone((TimeZone) zone);
-    if (ObjectUtils.isAny(zone.getClass(), Byte.class, Short.class, Integer.class, Long.class)) return getDateTimeZone(Long.valueOf(zone.toString()));
-    if (zone instanceof String) return getDateTimeZone(zone.toString());
+  public static ZoneId getZoneId(final Object zone) {
+    if (zone == null) return ZoneId.systemDefault();
+    if (zone instanceof ZoneId) return (ZoneId) zone;
+    if (zone instanceof TimeZone) return getZoneId((TimeZone) zone);
+    if (ObjectUtils.isAny(zone.getClass(), Byte.class, Short.class, Integer.class, Long.class)) return getZoneId(Long.valueOf(zone.toString()));
+    if (zone instanceof String) return getZoneId(zone.toString());
 
-    return DateTimeZone.UTC;
+    return UTC;
   }
 
-  private static DateTimeZone getDateTimeZone(final String zone) {
-    if (zone == null) return DateTimeZone.getDefault();
-    if (StringUtils.isSimilarToBlank(zone)) return DateTimeZone.UTC;
-    if (DateTimeZone.getAvailableIDs().contains(zone)) return DateTimeZone.forID(zone.toString());
-    if (LazyInitializer.ZONE_DUPRECATED.containsKey(zone)) return DateTimeZone.forTimeZone(TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(zone)));
-    if (LazyInitializer.AVAILABLE_ZONE_IDS.contains(zone)) return DateTimeZone.forTimeZone(TimeZone.getTimeZone(zone));
+  private static ZoneId getZoneId(final String zone) {
+    if (zone == null) return ZoneId.systemDefault();
+    if (StringUtils.isSimilarToBlank(zone)) return UTC;
+    if (ZoneId.getAvailableZoneIds().contains(zone)) return ZoneId.of(zone.toString());
+    if (LazyInitializer.ZONE_DUPRECATED.containsKey(zone)) return TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(zone)).toZoneId();
+    if (LazyInitializer.AVAILABLE_ZONE_IDS.contains(zone)) return TimeZone.getTimeZone(zone).toZoneId();
     Matcher base = OFFSET.matcher(StringUtils.normalize(zone, true));
     if (base.find()) {
       String offsetString = base.group();
 
       int[] offsetTime = JSONifier.parseLazy(JSONifier.stringifyLazy(StringUtils.truncateFirst(offsetString, "[\\+\\-]").split("[:\\.]")), int[].class);
-      if (offsetTime.length < 1) return DateTimeZone.UTC;
-      LocalTime offset = new LocalTime(offsetTime.length > 0 ? offsetTime[0] : 0, offsetTime.length > 1 ? offsetTime[1] : 0, offsetTime.length > 2 ? offsetTime[2] : 0, offsetTime.length > 3 ? offsetTime[3] : 0);
+      if (offsetTime.length < 1) return UTC;
+      LocalTime offset = LocalTime.of(offsetTime.length > 0 ? offsetTime[0] : 0, offsetTime.length > 1 ? offsetTime[1] : 0, offsetTime.length > 2 ? offsetTime[2] : 0, offsetTime.length > 3 ? offsetTime[3] : 0);
 
-      return DateTimeZone.forID((offsetString.startsWith("-") ? "-" : "+") + offset.toString(OFFSET_FORMAT));
+      return ZoneId.of((offsetString.startsWith("-") ? "-" : "+") + offset.format(OFFSET_FORMAT));
     }
 
-    return DateTimeZone.UTC;
+    return UTC;
   }
 
-  private static DateTimeZone getDateTimeZone(final TimeZone zone) {
-    if (zone == null) return DateTimeZone.getDefault();
+  private static ZoneId getZoneId(final TimeZone zone) {
+    if (zone == null) return ZoneId.systemDefault();
     String zoneID = ((TimeZone) zone).getID();
-    if (DateTimeZone.getAvailableIDs().contains(zoneID)) return DateTimeZone.forID(zoneID);
-    if (LazyInitializer.ZONE_DUPRECATED.containsKey(zoneID)) return DateTimeZone.forTimeZone(TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(zoneID)));
+    if (ZoneId.getAvailableZoneIds().contains(zoneID)) return ZoneId.of(zoneID);
+    if (LazyInitializer.ZONE_DUPRECATED.containsKey(zoneID)) return TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(zoneID)).toZoneId();
 
-    return DateTimeZone.forTimeZone((TimeZone) zone);
+    return ((TimeZone) zone).toZoneId();
   }
 
-  private static DateTimeZone getDateTimeZone(final Long millis) {
-    if (millis == null) return DateTimeZone.getDefault();
-    if (millis % 86400000L == 0) return DateTimeZone.UTC;
-    LocalTime offset = LocalTime.fromMillisOfDay((millis % 86400000L) * (millis < 0 ? -1 : 1));
+  private static ZoneId getZoneId(final Long millis) {
+    if (millis == null) return ZoneId.systemDefault();
+    if (millis % 86400000L == 0) return UTC;
+    LocalTime offset = LocalTime.ofSecondOfDay((millis % 86400000L) / 1000L * (millis < 0 ? -1L : 1L));
 
-    return DateTimeZone.forID((millis < 0 ? "-" : "+") + offset.toString(OFFSET_FORMAT));
+    return ZoneId.of((millis < 0 ? "-" : "+") + offset.format(OFFSET_FORMAT));
   }
 
   /**
@@ -223,7 +203,7 @@ public final class Localizer {
     if (locale == null) return Locale.getDefault();
     if (locale instanceof Locale) return (Locale) locale;
     if (locale instanceof Boolean) return ((Boolean) locale) ? Locale.getDefault() : Locale.ROOT;
-    if (locale instanceof String) return getAvailableLocale(new String[] { locale.toString() });
+    if (locale instanceof String) return getAvailableLocale(new String[]{locale.toString()});
 
     return Locale.ROOT;
   }
@@ -231,17 +211,16 @@ public final class Localizer {
   public static Locale getAvailableLocale(final String... localeArgs) {
     if (!(localeArgs != null && localeArgs.length > 0)) return Locale.getDefault();
     String localeID = StringUtils.join(localeArgs, ",").replaceAll("_,_$", "__").replaceAll("_?,_?", "_").replaceAll("_+$", "");
-    if (!LOCALE_SCRIPTABLE) localeID = localeID.replaceAll("_#.*$", "");
     if (LazyInitializer.AVAILABLE_LOCALES.containsKey(localeID)) return LazyInitializer.AVAILABLE_LOCALES.get(localeID);
 
     return Locale.ROOT;
   }
 
   public static Locale[] getAvailableLocales() {
-    return LazyInitializer.AVAILABLE_LOCALES.values().toArray(new Locale[] {});
+    return LazyInitializer.AVAILABLE_LOCALES.values().toArray(new Locale[]{});
   }
 
   public static String[] getAvailableZoneIDs() {
-    return LazyInitializer.AVAILABLE_ZONE_IDS.toArray(new String[] {});
+    return LazyInitializer.AVAILABLE_ZONE_IDS.toArray(new String[]{});
   }
 }

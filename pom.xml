@@ -20,16 +20,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
-  <inceptionYear>2015</inceptionYear>
+  <version>2.0.0-SNAPSHOT</version>
+  <inceptionYear>2016</inceptionYear>
   <name>commons-wrap</name>
   <description>Wrapped Apache Commons Maven Repository.</description>
   <url>https://github.com/furplag/commons-wrap/</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <!-- github server corresponds to entry in ~/.m2/settings.xml -->
     <github.global.server>github</github.global.server>
   </properties>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
+      <version>1.10.19</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -62,24 +62,14 @@
       <version>3.4</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-math3</artifactId>
-      <version>3.5</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
+      <version>20.0</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.5.1</version>
-    </dependency>
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>2.7</version>
     </dependency>
   </dependencies>
   <build>
@@ -146,7 +136,7 @@
       <plugin>
         <groupId>com.github.github</groupId>
         <artifactId>site-maven-plugin</artifactId>
-        <version>0.11</version>
+        <version>0.12</version>
         <configuration>
           <message>Maven artifacts for ${project.version}</message>
           <noJekyll>true</noJekyll>
@@ -158,6 +148,8 @@
           <merge>true</merge>
           <repositoryName>${project.artifactId}</repositoryName>
           <repositoryOwner>furplag</repositoryOwner>
+          <author>furplag</author>
+          <committer>furplag</committer>
         </configuration>
         <executions>
           <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->

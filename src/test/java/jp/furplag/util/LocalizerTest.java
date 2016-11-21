@@ -22,14 +22,14 @@ package jp.furplag.util;
 import static jp.furplag.util.Localizer.*;
 import static org.junit.Assert.*;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -58,45 +58,45 @@ public class LocalizerTest {
   public void tearDown() throws Exception {}
 
   @Test
-  public final void testGetDateTimeZone() {
-    DateTime dateTime = DateTime.parse("1995-05-23T00:00:00Z");
+  public final void testGetZoneId() {
+    ZonedDateTime dateTime = ZonedDateTime.parse("1995-05-23T00:00:00Z");
 
-    assertEquals("fallback : null", DateTimeZone.getDefault(), getDateTimeZone(null));
-    assertEquals("fallback : empty", DateTimeZone.UTC, getDateTimeZone(""));
-    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("not a timezone"));
-    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone(0d));
-    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone(0.18f));
-    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("12.345"));
-    assertEquals("fallback : invalid", DateTimeZone.UTC, getDateTimeZone("1.23.45"));
+    assertEquals("fallback : null", ZoneId.systemDefault(), getZoneId(null));
+    assertEquals("fallback : empty", Localizer.UTC, getZoneId(""));
+    assertEquals("fallback : invalid", Localizer.UTC, getZoneId("not a timezone"));
+    assertEquals("fallback : invalid", Localizer.UTC, getZoneId(0d));
+    assertEquals("fallback : invalid", Localizer.UTC, getZoneId(0.18f));
+    assertEquals("fallback : invalid", Localizer.UTC, getZoneId("12.345"));
+    assertEquals("fallback : invalid", Localizer.UTC, getZoneId("1.23.45"));
 
-    DateTimeFormatter formatter = ISODateTimeFormat.dateHourMinuteSecondMillis();
-    long limit = 86400000L;
-    for (long millis = -limit; millis <= limit; millis += 500L) {
-      LocalTime offset = LocalTime.fromMillisOfDay(millis % 86400000L * (millis < 0 ? -1 : 1));
-      String expected = DateTimeZone.forID((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
-      String actual = getDateTimeZone(millis).getID();
-      assertEquals("millis : [" + millis + "]", expected, actual);
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
+    long limit = 64800000L;
+    for (long millis = -limit; millis <= limit; millis += 5000L) {
+      LocalTime offset = dateTime.plus(millis * (millis < 0 ? -1L : 1L), ChronoUnit.MILLIS).toLocalTime();
+      String expected = ZoneId.of((millis < 0 ? "-" : "+") + offset.format(formatter)).getId();
+      String actual = getZoneId(millis).getId();
+      assertEquals("offset : [" + millis + "]", expected, actual);
     }
 
-    for (long millis = 0; millis <= limit; millis += 500L) {
-      LocalTime offset = dateTime.plusMillis((int) millis * (millis < 0 ? -1 : 1)).toLocalTime();
-      String expected = DateTimeZone.forID((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
-      String actual = getDateTimeZone((millis < 0 ? "-" : "+") + offset.toString("HH:mm:ss.SSS")).getID();
+    for (long millis = 0; millis <= limit; millis += 5000L) {
+      LocalTime offset = dateTime.plus((int) millis * (millis < 0 ? -1 : 1), ChronoUnit.MILLIS).toLocalTime();
+      String expected = ZoneId.of((millis < 0 ? "-" : "+") + offset.format(formatter)).getId();
+      String actual = getZoneId((millis < 0 ? "-" : "+") + offset.format(formatter)).getId();
       assertEquals("offsetString : [" + millis + "]", expected, actual);
     }
 
-    for (String id : DateTimeZone.getAvailableIDs()) {
-      String expected = dateTime.withZone(DateTimeZone.forID(id)).toString(formatter);
-      String actual = dateTime.withZone(getDateTimeZone(id)).toString(formatter);
-      assertEquals("forID : [" + id + "][" + DateTimeZone.forID(id).getID() + "][" + getDateTimeZone(id).getID() + "]", expected, actual);
+    for (String id : ZoneId.getAvailableZoneIds()) {
+      String expected = dateTime.withZoneSameInstant(ZoneId.of(id)).format(formatter);
+      String actual = dateTime.withZoneSameInstant(getZoneId(id)).format(formatter);
+      assertEquals("forID : [" + id + "][" + ZoneId.of(id).getId() + "][" + getZoneId(id).getId() + "]", expected, actual);
     }
 
     for (String id : TimeZone.getAvailableIDs()) {
       TimeZone zone = TimeZone.getTimeZone(id);
       if (LazyInitializer.ZONE_DUPRECATED.containsKey(id)) zone = TimeZone.getTimeZone(LazyInitializer.ZONE_DUPRECATED.get(id));
-      String expected = dateTime.withZone(DateTimeZone.forTimeZone(zone)).toString(formatter);
-      String actual = dateTime.withZone(getDateTimeZone(zone)).toString(formatter);
-      assertEquals("forTimeZone : [" + DateTimeZone.forTimeZone(zone).getID() + "][" + getDateTimeZone(zone).getID() + "]", expected, actual);
+      String expected = dateTime.withZoneSameInstant(zone.toZoneId()).format(formatter);
+      String actual = dateTime.withZoneSameInstant(getZoneId(zone)).format(formatter);
+      assertEquals("forTimeZone : [" + zone.toZoneId().getId() + "][" + getZoneId(zone).getId() + "]", expected, actual);
     }
   }
 
