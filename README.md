@@ -1,5 +1,6 @@
 # commons-wrap
 [![Build Status](https://travis-ci.org/furplag/commons-wrap.svg?branch=master)](https://travis-ci.org/furplag/commons-wrap)
+[![codebeat badge](https://codebeat.co/badges/0acfc653-585a-42ed-af6a-d12f26b225d1)](https://codebeat.co/projects/github-com-furplag-commons-wrap)
 
 Wrapped [Apache Commons](http://commons.apache.org/) Maven Repository.
 
