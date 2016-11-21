@@ -20,10 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
 
-import jp.furplag.util.JSONifier;
-
-import jp.furplag.util.JSONifier;
-
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
   protected FileUtils() {
@@ -61,10 +57,5 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
   private static String normalize(String filename) {
     return FilenameUtils.normalizeNoEndSeparator(filename, true);
-  }
-
-  public static void main(String[] args) {
-    String filename = "/test.txt";
-    System.out.println(createNewFile(filename) ? JSONifier.stringifyLazy(new File(filename)) : "fail");
   }
 }

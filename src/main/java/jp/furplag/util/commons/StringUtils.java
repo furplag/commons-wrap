@@ -415,9 +415,4 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
   public static String trim(final String str, final boolean emptyToBlank) {
     return isSimilarToBlank(str) && !emptyToBlank ? null : defaultString(str).replaceAll("[\\s\\t　]+", " ").trim();
   }
-
-  public static void main(String[] args) {
-//    System.out.println(String.valueOf(null));
-    System.out.println(Objects.toString(null, ""));
-  }
 }

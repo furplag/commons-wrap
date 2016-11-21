@@ -31,8 +31,6 @@ import com.google.common.collect.Lists;
 
 import jp.furplag.util.commons.StringUtils;
 
-import jp.furplag.util.commons.StringUtils;
-
 public class ResourceUtilsTest {
 
   private String baseName = "resources";
