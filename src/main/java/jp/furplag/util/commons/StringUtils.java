@@ -432,8 +432,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return the resulting String.
    */
   public static String truncateAll(final String str, final String regex) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
+    if (isSimilarToBlank(str) || isBlank(regex)) return str;
 
     return str.replaceAll(regex, EMPTY);
   }
@@ -446,8 +445,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * @return the resulting String.
    */
   public static String truncateFirst(final String str, final String regex) {
-    if (isSimilarToBlank(str)) return str;
-    if (isBlank(regex)) return str;
+    if (isSimilarToBlank(str) || isBlank(regex)) return str;
 
     return str.replaceFirst(regex, EMPTY);
   }
