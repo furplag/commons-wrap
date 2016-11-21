@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import jp.furplag.util.commons.StringUtils;
 
 
+
 /**
  * utilities for MessageResources.
  *

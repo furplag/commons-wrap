@@ -22,6 +22,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import jp.furplag.util.JSONifier;
 
+import jp.furplag.util.JSONifier;
+
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
   protected FileUtils() {
