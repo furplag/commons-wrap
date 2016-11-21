@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import jp.furplag.util.commons.StringUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+
+import jp.furplag.util.commons.StringUtils;
 
 public class ResourceUtilsTest {
 

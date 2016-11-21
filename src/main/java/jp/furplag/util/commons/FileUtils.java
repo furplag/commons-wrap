@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package jp.furplag.util.commons;
 import java.io.File;
 import java.io.IOException;
 
-import jp.furplag.util.JSONifier;
-
 import org.apache.commons.io.FilenameUtils;
+
+import jp.furplag.util.JSONifier;
 
 public class FileUtils extends org.apache.commons.io.FileUtils {
 

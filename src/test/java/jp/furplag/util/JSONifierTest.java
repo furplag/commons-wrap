@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
-
 package jp.furplag.util;
 
-import static jp.furplag.util.JSONifier.parse;
-import static jp.furplag.util.JSONifier.parseLazy;
-import static jp.furplag.util.JSONifier.stringify;
-import static jp.furplag.util.JSONifier.stringifyLazy;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static jp.furplag.util.JSONifier.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.Serializable;
