@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,37 +28,6 @@ public class StringUtilsTest {
 
   @Before
   public void setUp() throws Exception {}
-
-  @Test
-  public void testTruncateAll() {
-    assertEquals(null, StringUtils.truncateAll(null, null));
-    assertEquals(null, StringUtils.truncateAll(null, "test"));
-    assertEquals("test", StringUtils.truncateAll("test", null));
-    assertEquals("test", StringUtils.truncateAll("test", ""));
-    assertEquals("", StringUtils.truncateAll("test", "test"));
-    assertEquals("testtest", StringUtils.truncateAll("testTesttestTest", "Test"));
-  }
-
-  @Test
-  public void testTruncateFirst() {
-    assertEquals(null, StringUtils.truncateFirst(null, null));
-    assertEquals(null, StringUtils.truncateFirst(null, "test"));
-    assertEquals("test", StringUtils.truncateFirst("test", null));
-    assertEquals("test", StringUtils.truncateFirst("test", ""));
-    assertEquals("", StringUtils.truncateFirst("test", "test"));
-    assertEquals("test", StringUtils.truncateFirst("testtest", "test"));
-    assertEquals("testtestTest", StringUtils.truncateFirst("testTesttestTest", "Test"));
-  }
-
-  @Test
-  public void testTruncateLast() {
-    assertEquals(null, StringUtils.truncateLast(null, null));
-    assertEquals(null, StringUtils.truncateLast(null, "test"));
-    assertEquals("test", StringUtils.truncateLast("test", null));
-    assertEquals("test", StringUtils.truncateLast("test", ""));
-    assertEquals("", StringUtils.truncateLast("test", "test"));
-    assertEquals("testTesttest", StringUtils.truncateLast("testTesttestTest", "Test"));
-  }
 
   @Test
   public void testReplaceAll() {

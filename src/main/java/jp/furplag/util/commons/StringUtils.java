@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.util.commons;
 
 import java.nio.charset.Charset;
@@ -163,15 +162,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     if (end < 0) end = 0;
     int begin = (beginIndex < 0 ? array.length : 0) + beginIndex;
     if (begin < 0) begin = 0;
-    if (begin > end) return EMPTY;
-    final int numOfItems = end - begin;
-    if (numOfItems < 1) return EMPTY;
-
-    final StringBuilder sb = new StringBuilder(numOfItems * 16);
+    if (begin >= end) return EMPTY;
+    final StringBuilder sb = new StringBuilder((end - begin) * 16);
     for (int i = begin; i < end; i++) {
       if (array[i] != null && !isBlank(defaultString(String.valueOf(array[i])))) {
-        if (i > begin && sb.length() > 0) sb.append(defaultString(separator));
-        sb.append(array[i]);
+        sb
+          .append(i > begin && sb.length() > 0 ? defaultString(separator) : "")
+          .append(array[i]);
       }
     }
 
@@ -424,40 +421,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     return str.replaceAll("[\\s\\t　]+", " ").trim();
   }
 
-  /**
-   * Shorthand for {@code java.lang.String.replaceAll(regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateAll(final String str, final String regex) {
-    if (isSimilarToBlank(str) || isBlank(regex)) return str;
-
-    return str.replaceAll(regex, EMPTY);
-  }
-
-  /**
-   * Shorthand for {@code java.lang.String.replaceFirst(regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateFirst(final String str, final String regex) {
-    if (isSimilarToBlank(str) || isBlank(regex)) return str;
-
-    return str.replaceFirst(regex, EMPTY);
-  }
-
-  /**
-   * Shorthand for {@code replaceLast(str, regex, "")}.
-   *
-   * @param str the string, may be null.
-   * @param regex the regular expression to which this string is to be matched.
-   * @return the resulting String.
-   */
-  public static String truncateLast(final String str, final String regex) {
-    return replaceLast(str, regex, EMPTY);
+  public static void main(String[] args) {
   }
 }

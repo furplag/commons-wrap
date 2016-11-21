@@ -1,16 +1,18 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.util;
 
 import java.time.LocalTime;
@@ -57,7 +59,7 @@ public final class Localizer {
       for (Locale locale : Locale.getAvailableLocales()) {
         map.put(locale.toString(), locale);
         String localeArgs = StringUtils.join(new String[]{locale.getLanguage(), locale.getCountry(), locale.getVariant()}, "_");
-        if (locale.toString().equals(StringUtils.truncateLast(localeArgs, "_+$"))) continue;
+        if (locale.toString().equals(StringUtils.replaceLast(localeArgs, "_+$", ""))) continue;
         map.put(localeArgs, locale);
         if (locale.toString().endsWith("#Latn")) map.put(locale.toString().replaceAll("^" + locale.getLanguage() + "_" + locale.getCountry(), locale.getLanguage() + "_" + locale.getCountry() + "_"), locale);
       }
@@ -156,7 +158,7 @@ public final class Localizer {
     if (base.find()) {
       String offsetString = base.group();
 
-      int[] offsetTime = JSONifier.parseLazy(JSONifier.stringifyLazy(StringUtils.truncateFirst(offsetString, "[\\+\\-]").split("[:\\.]")), int[].class);
+      int[] offsetTime = JSONifier.parseLazy(JSONifier.stringifyLazy(StringUtils.replaceFirst(offsetString, "[\\+\\-]", "").split("[:\\.]")), int[].class);
       if (offsetTime.length < 1) return UTC;
       LocalTime offset = LocalTime.of(offsetTime.length > 0 ? offsetTime[0] : 0, offsetTime.length > 1 ? offsetTime[1] : 0, offsetTime.length > 2 ? offsetTime[2] : 0, offsetTime.length > 3 ? offsetTime[3] : 0);
 

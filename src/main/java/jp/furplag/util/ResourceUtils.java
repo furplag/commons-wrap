@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import jp.furplag.util.commons.StringUtils;
+
 
 /**
  * utilities for MessageResources.
@@ -191,7 +192,7 @@ public class ResourceUtils {
     Locale.setDefault(Locale.ROOT);
     String getString = "";
     try {
-      getString = StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(ResourceBundle.getBundle(StringUtils.defaultString(baseName), locale == null ? Locale.ROOT : locale).getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+      getString = StringUtils.replaceAll(MessageFormat.format(StringUtils.defaultString(ResourceBundle.getBundle(StringUtils.defaultString(baseName), locale == null ? Locale.ROOT : locale).getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN, "");
       Locale.setDefault(defaultLocale);
 
       return getString;
@@ -199,7 +200,7 @@ public class ResourceUtils {
       if (printStackTrace) e.printStackTrace();
     }
 
-    return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+    return StringUtils.replaceAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN, "");
   }
 
   /**
@@ -227,12 +228,12 @@ public class ResourceUtils {
    */
   private static String get(final ResourceBundle bundle, final String key, final Object[] arguments, final String defaultString, final boolean printStackTrace) {
     try {
-      if (bundle != null) return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(bundle.getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+      if (bundle != null) return StringUtils.replaceAll(MessageFormat.format(StringUtils.defaultString(bundle.getString(StringUtils.defaultString(key))), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN, "");
     } catch (MissingResourceException e) {
       if (printStackTrace) e.printStackTrace();
     }
 
-    return StringUtils.truncateAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN);
+    return StringUtils.replaceAll(MessageFormat.format(StringUtils.defaultString(defaultString), arguments == null ? new Object[]{} : arguments), FORMAT_PATTERN, "");
   }
 
   public static String get(final String baseName, final String key, final Object[] arguments, final String defaultString, final String locale) {

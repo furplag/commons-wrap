@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package jp.furplag.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import jp.furplag.util.commons.StringUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+
+import jp.furplag.util.commons.StringUtils;
 
 public class ResourceUtilsTest {
 
@@ -153,9 +153,9 @@ public class ResourceUtilsTest {
     assertEquals("Not exist100%.", ResourceUtils.get(baseName, "not.exist", new Object[]{1, 2, 3}, "Not exist{0,number,percent}.", Locale.getDefault()));
     String expected = ResourceBundle.getBundle(baseName, Locale.ROOT).getString("test");
     assertEquals(expected, ResourceUtils.get(baseName, "test", new Object[]{1, 2, 3}, "Not exist{0,number,percent}.", Locale.ROOT));
-    expected = StringUtils.truncateAll(ResourceBundle.getBundle(baseName, Locale.ROOT).getString("test.test"), "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}");
+    expected = StringUtils.replaceAll(ResourceBundle.getBundle(baseName, Locale.ROOT).getString("test.test"), "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}", "");
     assertEquals(expected, ResourceUtils.get(baseName, "test.test", arguments, "Not exist{0,number,percent}.", Locale.ROOT));
-    expected = StringUtils.truncateAll(MessageFormat.format(ResourceBundle.getBundle(baseName, Locale.ROOT).getString("test.test"), new Object[]{1, 2, 3}), "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}");
+    expected = StringUtils.replaceAll(MessageFormat.format(ResourceBundle.getBundle(baseName, Locale.ROOT).getString("test.test"), new Object[]{1, 2, 3}), "\\{([0-9]|[1-9][0-9]*)(,\\s?[^\\}\\s,]+)*\\}", "");
     assertEquals(expected, ResourceUtils.get(baseName, "test.test", new Object[]{1, 2, 3}, "Not exist{0,number,percent}.", Locale.ROOT));
     assertEquals("テスト(1)。", ResourceUtils.get(baseName, "test.test", new Object[]{"(", 1, ')'}, "Not exist{0,number,percent}.", Locale.JAPAN));
     assertEquals("Not exist100%100%.", ResourceUtils.get(baseName, "not.exist", new Object[]{1}, "Not exist{0,number,percent}{0,number,percent}.", Locale.getDefault()));
