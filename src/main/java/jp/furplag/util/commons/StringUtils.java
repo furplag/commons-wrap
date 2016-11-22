@@ -409,7 +409,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * returns a copy of the string, with leading and trailing whitespace and full-width space omitted.
    *
    * @param str the string, may be null.
-   * @param emptyToBlank if {@code true}, Return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace.
+   * @param emptyToBlank if {@code true}, return empty String ("") if the String is null, whitespace, full-width space, empty, newline or whitespace.
    * @return the string leading and trailing whitespace and full-width space omitted.
    */
   public static String trim(final String str, final boolean emptyToBlank) {

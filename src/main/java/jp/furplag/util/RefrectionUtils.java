@@ -37,15 +37,25 @@ public class RefrectionUtils {
    * @return the {@code Field} object for the specified field in this class.
    */
   public static Field getField(Class<?> cls, String name) {
-    if (cls == null) return null;
+    Field f = null;
+    if (cls == null) return f;
+    if (cls.isPrimitive()) return f;
     try {
-      Field f = cls.getDeclaredField(StringUtils.defaultString(name));
-      f.setAccessible(true);
+      f = cls.getDeclaredField(StringUtils.defaultString(name));
+    } catch (NoSuchFieldException e) {
+      Class<?> theClass = cls;
+      while (theClass != null) {
+        try {
+          f = theClass.getDeclaredField(StringUtils.defaultString(name));
+          break;
+        } catch (NoSuchFieldException ex) {
+          theClass = theClass.getSuperclass();
+        }
+      }
+    } catch (SecurityException e) {}
+    if (f != null) f.setAccessible(true);
 
-      return f;
-    } catch (NoSuchFieldException e) {} catch (SecurityException e) {}
-
-    return null;
+    return f;
   }
 
   /**
@@ -57,15 +67,24 @@ public class RefrectionUtils {
    * @return the {@code Method} object for the method of this class matching the specified name and parameters.
    */
   public static Method getMethod(Class<?> cls, String name, Class<?>... parameterTypes) {
-    if (cls == null) return null;
+    Method m = null;
+    if (cls == null) return m;
     try {
-      Method m = cls.getDeclaredMethod(StringUtils.defaultString(name), parameterTypes);
-      m.setAccessible(true);
+      m = cls.getDeclaredMethod(StringUtils.defaultString(name), parameterTypes);
+    } catch (NoSuchMethodException e) {
+        Class<?> theClass = cls;
+        while (theClass != null) {
+          try {
+            m = theClass.getDeclaredMethod(StringUtils.defaultString(name), parameterTypes);
+            break;
+          } catch (NoSuchMethodException ex) {
+            theClass = theClass.getSuperclass();
+          }
+        }
+    } catch (SecurityException e) {}
+    if (m != null) m.setAccessible(true);
 
-      return m;
-    } catch (NoSuchMethodException e) {} catch (SecurityException e) {}
-
-    return null;
+    return m;
   }
 
   /**
@@ -77,15 +96,24 @@ public class RefrectionUtils {
    */
   @SuppressWarnings("unchecked")
   public static <T> Constructor<T> getConstructor(Class<T> cls, Class<?>... parameterTypes) {
-    if (cls == null) return null;
+    Constructor<T> c = null;
+    if (cls == null) return c;
     try {
-      Constructor<?> c = cls.getDeclaredConstructor(parameterTypes);
-      c.setAccessible(true);
+      c = cls.getDeclaredConstructor(parameterTypes);
+    } catch (NoSuchMethodException e) {
+      Class<?> theClass = cls;
+      while (theClass != null) {
+        try {
+          c = (Constructor<T>) theClass.getDeclaredConstructor(parameterTypes);
+          break;
+        } catch (NoSuchMethodException ex) {
+          theClass = theClass.getSuperclass();
+        }
+      }
+    } catch (SecurityException e) {}
+    if (c != null) c.setAccessible(true);
 
-      return (Constructor<T>) c;
-    } catch (NoSuchMethodException e) {} catch (SecurityException e) {}
-
-    return null;
+    return c;
   }
 
   /**
@@ -102,7 +130,7 @@ public class RefrectionUtils {
       method.setAccessible(true);
 
       return method.invoke(obj, args);
-    } catch (IllegalAccessException e) {} catch (IllegalArgumentException e) {} catch (InvocationTargetException e) {}
+    } catch (IllegalAccessException e) {} catch (IllegalArgumentException e) {} catch (InvocationTargetException e) {} catch (NullPointerException e) {}
 
     return null;
   }

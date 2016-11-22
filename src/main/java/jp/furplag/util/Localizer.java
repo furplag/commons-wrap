@@ -72,31 +72,7 @@ public final class Localizer {
     }
 
     private static Map<String, String> initializeZoneDuprecated() {
-      Map<String, String> map = new HashMap<String, String>();
-      map.putAll(ZoneId.SHORT_IDS);
-      map.put("Asia/Riyadh87", "+03:07:04");
-      map.put("Asia/Riyadh88", "+03:07:04");
-      map.put("Asia/Riyadh89", "+03:07:04");
-      map.put("Mideast/Riyadh87", "+03:07:04");
-      map.put("Mideast/Riyadh88", "+03:07:04");
-      map.put("Mideast/Riyadh89", "+03:07:04");
-      map.put("SystemV/AST4", "America/Puerto_Rico");
-      map.put("SystemV/AST4ADT", "America/Halifax");
-      map.put("SystemV/CST6", "Etc/GMT+6");
-      map.put("SystemV/CST6CDT", "America/Chicago");
-      map.put("SystemV/EST5", "Etc/GMT+5");
-      map.put("SystemV/EST5EDT", "America/New_York");
-      map.put("SystemV/HST10", "Etc/GMT+10");
-      map.put("SystemV/MST7", "Etc/GMT+7");
-      map.put("SystemV/MST7MDT", "America/Denver");
-      map.put("SystemV/PST8", "Etc/GMT+8");
-      map.put("SystemV/PST8PDT", "America/Los_Angeles");
-      map.put("SystemV/YST9", "Etc/GMT+9");
-      map.put("SystemV/YST9YDT", "America/Anchorage");
-      map.put("EST", "America/New_York");
-      map.put("MST", "America/Denver");
-
-      return ImmutableMap.copyOf(map);
+      return ImmutableMap.copyOf(ZoneId.SHORT_IDS);
     }
   }
 
@@ -116,7 +92,7 @@ public final class Localizer {
    * newZoneId("9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
    * newZoneId("-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
    * newZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * newZoneId("Etc/GMT+9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
    * </pre>
    * <p>
    * fallback to similar timezone if deprecated time zone specified.
@@ -222,7 +198,7 @@ public final class Localizer {
     return LazyInitializer.AVAILABLE_LOCALES.values().toArray(new Locale[]{});
   }
 
-  public static String[] getAvailableZoneIDs() {
+  public static String[] getAvailableZoneIds() {
     return LazyInitializer.AVAILABLE_ZONE_IDS.toArray(new String[]{});
   }
 }

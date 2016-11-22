@@ -44,7 +44,7 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
   /**
    * {@link org.apache.commons.lang3.ClassUtils#isPrimitiveWrapper(Class)}.
    *
-   * @param acceptWrapper use {@code org.apache.commons.lang3.ClassUtils.isPrimitiveWrapper(Class<?>)}
+   * @param strict returns true if 
    * @param objects objects. Class<?> or an Object.
    * @return {@code for (Object o : objects) isPrimitiveWrapper(class of o)}.
    */
@@ -62,7 +62,7 @@ public class ClassUtils extends org.apache.commons.lang3.ClassUtils {
    * Object.getClass() against null.
    *
    * @param objects object. Class<?> or an Object.
-   * @return
+   * @return the class of o.
    */
   private static Class<?> getClassLazy(Object o) {
     if (o == null) return null;

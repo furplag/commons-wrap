@@ -46,7 +46,7 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
   /**
    * substitute for {@code instanceof}.
    *
-   * @param clazz the Object, return false if null.
+   * @param clazz the Object, return null if null.
    * @param classes array of {@link java.lang.Class}.
    * @return if true, {@code o.getClass()} (or Class<?> o) contains given Classes.
    */
@@ -68,7 +68,7 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
   /**
    * substitute for {@link java.lang.Class#newInstance()}.
    *
-   * @param type the Class object, return false if null.
+   * @param type the Class object, return null if null.
    * @return empty instance of specified {@link java.lang.Class}.
    * @throws InstantiationException
    */
@@ -98,13 +98,6 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
    * @param typeRef {@link com.fasterxml.jackson.core.type.TypeReference}.
    * @return empty instance of specified {@link java.lang.Class}.
    * @throws InstantiationException
-   * @throws IllegalAccessException
-   * @throws NegativeArraySizeException
-   * @throws ClassNotFoundException
-   * @throws InvocationTargetException
-   * @throws NoSuchMethodException
-   * @throws IllegalArgumentException
-   * @throws SecurityException
    */
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(TypeReference<T> typeRef) throws InstantiationException {

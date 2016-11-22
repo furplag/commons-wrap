@@ -71,7 +71,8 @@ public class LocalizerTest {
       LocalTime offset = dateTime.plus(millis * (millis < 0 ? -1L : 1L), ChronoUnit.MILLIS).toLocalTime();
       String expected = ZoneId.of((millis < 0 ? "-" : "+") + offset.format(formatter)).getId();
       String actual = getZoneId(millis).getId();
-      assertEquals("offset : [" + millis + "]", expected, actual);
+
+      assertEquals("offset : [" + millis + "][" + offset + "]", expected, actual);
     }
 
     for (long millis = 0; millis <= limit; millis += 5000L) {
@@ -174,6 +175,6 @@ public class LocalizerTest {
 
   @Test
   public final void testGetAvailableZoneIDs() {
-    assertNotNull(getAvailableZoneIDs());
+    assertNotNull(getAvailableZoneIds());
   }
 }
