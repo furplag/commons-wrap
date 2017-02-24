@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,30 +85,30 @@ public final class Localizer {
    * create {@link ZoneId}.
    *
    * <pre>
-   * newZoneId(null) = ZoneId.getDefault()
-   * newZoneId("") = ZoneId.UTC
-   * newZoneId(9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
-   * newZoneId(-9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newZoneId("9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
-   * newZoneId("-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
-   * newZoneId("Etc/GMT+9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * getZoneId(null) = ZoneId.getDefault()
+   * getZoneId("") = ZoneId.UTC
+   * getZoneId(9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * getZoneId(-9) = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * getZoneId("9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
+   * getZoneId("-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * getZoneId("Etc/GMT-9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT-0900"))
+   * getZoneId("Etc/GMT+9") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0900"))
    * </pre>
    * <p>
    * fallback to similar timezone if deprecated time zone specified.
    * </p>
    *
    * <pre>
-   * newZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
-   * newZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
+   * getZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
+   * getZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
    * </pre>
    * <p>
    * minutes, millis also specifiable.
    * </p>
    *
    * <pre>
-   * newZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
-   * newZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
+   * getZoneId("SystemV/EST5") = ZoneId.forID("Etc/GMT+5")
+   * getZoneId("Mideast/Riyadh87") = ZoneId.forTimeZone(TimeZone.getTimeZone("GMT+0307"))
    * </pre>
    *
    * @param zone timezone ( {@link String}, {@link TimeZone}, and {@link ZoneId} specifiable ). Use default if null.
@@ -165,12 +165,12 @@ public final class Localizer {
    * create {@code Locale}.
    * <p>
    * <ul>
-   * <li>{@code Localizer.newLocale(null)} => default locale ({@code Locale.getDefault()})</li>
-   * <li>{@code Localizer.newLocale("invalid_LOCALE")} => default locale ({@code Locale.getDefault()})</li>
-   * <li>{@code Localizer.newLocale("")} => {@code Locale.ROOT}</li>
-   * <li>{@code Localizer.newLocale("ja")} => {@code Locale.JAPANESE}</li>
-   * <li>{@code Localizer.newLocale("ja_JP")} => {@code Locale.JAPAN}</li>
-   * <li>{@code Localizer.newLocale("ja_JP_JP")} => {@code "ja_JP_JP_#u-ca-japanese"} (1.7 later), {@code "ja_JP_JP"} (1.6).</li>
+   * <li>{@code Localizer.getAvailableLocale(null)} => default locale ({@code Locale.getDefault()})</li>
+   * <li>{@code Localizer.getAvailableLocale("invalid_LOCALE")} => default locale ({@code Locale.getDefault()})</li>
+   * <li>{@code Localizer.getAvailableLocale("")} => {@code Locale.ROOT}</li>
+   * <li>{@code Localizer.getAvailableLocale("ja")} => {@code Locale.JAPANESE}</li>
+   * <li>{@code Localizer.getAvailableLocale("ja_JP")} => {@code Locale.JAPAN}</li>
+   * <li>{@code Localizer.getAvailableLocale("ja_JP_JP")} => {@code "ja_JP_JP_#u-ca-japanese"} (1.7 later), {@code "ja_JP_JP"} (1.6).</li>
    * </ul>
    * </p>
    *

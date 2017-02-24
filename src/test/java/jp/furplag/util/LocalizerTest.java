@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016+ furplag (https://github.com/furplag/)
+ * Copyright (C) 2016+ furplag (https://github.com/furplag)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,5 +176,6 @@ public class LocalizerTest {
   @Test
   public final void testGetAvailableZoneIDs() {
     assertNotNull(getAvailableZoneIds());
+    
   }
 }
