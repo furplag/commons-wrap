@@ -168,8 +168,6 @@
           <merge>true</merge>
           <repositoryName>${project.name}</repositoryName>
           <repositoryOwner>${developer.name}</repositoryOwner>
-          <author>${developer.name}</author>
-          <committer>${developer.name}</committer>
         </configuration>
         <executions>
           <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
