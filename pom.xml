@@ -50,6 +50,13 @@
     <developerConnection>scm:git:${project.url}.git</developerConnection>
     <tag>${project.name}-${project.version}</tag>
   </scm>
+  <distributionManagement>
+    <repository>
+      <id>internal.repo</id>
+      <name>Temporary Staging Repository</name>
+      <url>file://${project.build.directory}/mvn-repo</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,6 +105,18 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>jp.furplag.sandbox.dependency-management</id>
+      <url>https://raw.github.com/furplag/dependency-management/mvn-repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <build>
     <plugins>
       <plugin>
@@ -191,13 +210,5 @@
       </testResource>
     </testResources>
   </build>
-
-  <distributionManagement>
-    <repository>
-      <id>internal.repo</id>
-      <name>Temporary Staging Repository</name>
-      <url>file://${project.build.directory}/mvn-repo</url>
-    </repository>
-  </distributionManagement>
 
 </project>
