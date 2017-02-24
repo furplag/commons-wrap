@@ -8,4 +8,4 @@ jdk:
   - oraclejdk8
 
 before_install:
-  - mvn license:format
+  - mvn license:format --quiet -B
