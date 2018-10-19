@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.util.commons;
 
 import java.lang.reflect.Array;
@@ -21,17 +22,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.ClassUtils;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import jp.furplag.util.RefrectionUtils;
 
@@ -81,9 +80,9 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     }
     if (type.isInterface()) {
       if (!Collection.class.isAssignableFrom(type)) throw new InstantiationException("could not create instance, the type \"" + type.getName() + "\" is an interface.");
-      if (List.class.isAssignableFrom(type)) return (T) Lists.newArrayList();
-      if (Map.class.isAssignableFrom(type)) return (T) Maps.newHashMap();
-      if (Set.class.isAssignableFrom(type)) return (T) Sets.newHashSet();
+      if (List.class.isAssignableFrom(type)) return (T) new ArrayList<>();
+      if (Map.class.isAssignableFrom(type)) return (T) new HashMap<>();
+      if (Set.class.isAssignableFrom(type)) return (T) new HashSet<>();
     }
     if (type.isPrimitive()) return newPrimitive(type);
     if (ClassUtils.isPrimitiveOrWrapper(type)) return null;
@@ -111,9 +110,9 @@ public class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
       Type rawType = ((ParameterizedType) type).getRawType();
       Class<?> clazz = (Class<?>) rawType;
       if (clazz.isInterface()) {
-        if (List.class.isAssignableFrom(clazz)) return (T) Lists.newArrayList();
-        if (Map.class.isAssignableFrom(clazz)) return (T) Maps.newHashMap();
-        if (Set.class.isAssignableFrom(clazz)) return (T) Sets.newHashSet();
+        if (List.class.isAssignableFrom(clazz)) return (T) new ArrayList<>();
+        if (Map.class.isAssignableFrom(clazz)) return (T) new HashMap<>();
+        if (Set.class.isAssignableFrom(clazz)) return (T) new HashSet<>();
       }
 
       return newObject((Class<T>) rawType);

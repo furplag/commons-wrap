@@ -18,6 +18,7 @@ package jp.furplag.util;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -25,9 +26,10 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import org.apache.commons.collections4.map.UnmodifiableMap;
+import org.apache.commons.collections4.set.UnmodifiableSet;
 
 import jp.furplag.util.commons.ObjectUtils;
 import jp.furplag.util.commons.StringUtils;
@@ -64,15 +66,15 @@ public final class Localizer {
         if (locale.toString().endsWith("#Latn")) map.put(locale.toString().replaceAll("^" + locale.getLanguage() + "_" + locale.getCountry(), locale.getLanguage() + "_" + locale.getCountry() + "_"), locale);
       }
 
-      return ImmutableMap.copyOf(map);
+      return UnmodifiableMap.unmodifiableMap(map);
     }
 
     private static Set<String> initializeZoneIDs() {
-      return ImmutableSet.copyOf(TimeZone.getAvailableIDs());
+      return UnmodifiableSet.unmodifiableSet(Arrays.stream(TimeZone.getAvailableIDs()).collect(Collectors.toSet()));
     }
 
     private static Map<String, String> initializeZoneDuprecated() {
-      return ImmutableMap.copyOf(ZoneId.SHORT_IDS);
+      return UnmodifiableMap.unmodifiableMap(ZoneId.SHORT_IDS);
     }
   }
 
@@ -175,7 +177,7 @@ public final class Localizer {
    * </p>
    *
    * @param locale the language for Localization ( {@code String} and {@code Locale} specifiable ). Use default if {@code locale} is null.
-   * @return
+   * @return {@link Locale}
    */
   public static Locale getAvailableLocale(final Object locale) {
     if (locale == null) return Locale.getDefault();

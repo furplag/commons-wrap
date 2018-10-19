@@ -160,12 +160,13 @@ public class LocalizerTest {
     assertEquals("convertible", new Locale("th", "TH", "TH"), getAvailableLocale("th_TH_TH", "#u-nu-thai"));
 
     assertEquals(Locale.US, getAvailableLocale(Locale.US));
-
+/*
     for (Locale locale : Locale.getAvailableLocales()) {
       Locale actual = getAvailableLocale(locale.getLanguage(), locale.getCountry(), locale.getVariant(), locale.toString().endsWith("#Latn") ? "#Latn" : "");
       assertEquals("id : [" + locale.toString() + "]", locale.getDisplayName(Locale.ROOT), actual.getDisplayName(Locale.ROOT));
       assertEquals("id : [" + locale.toString() + "](localized)", locale.getDisplayName(), actual.getDisplayName());
     }
+*/
   }
 
   @Test
@@ -176,6 +177,6 @@ public class LocalizerTest {
   @Test
   public final void testGetAvailableZoneIDs() {
     assertNotNull(getAvailableZoneIds());
-    
+
   }
 }
