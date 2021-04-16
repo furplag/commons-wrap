@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.1-final</version>
   <inceptionYear>2016</inceptionYear>
   <name>commons-wrap</name>
   <description>Wrapped Apache Commons Maven Repository.</description>
@@ -141,9 +141,11 @@
           </dependency>
         </dependencies>
       </plugin>
+
       <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
+        <version>3.0</version>
         <configuration>
           <header>.licenseHeader</header>
           <properties>
@@ -151,17 +153,30 @@
             <contact>${developer.url}</contact>
           </properties>
           <excludes>
-            <exclude>.licenseHeader</exclude>
+            <exclude>**/.licenseHeader</exclude>
             <exclude>**/LICENSE</exclude>
+            <exclude>**/.*</exclude>
+            <exclude>**/*.config</exclude>
+            <exclude>**/*.yaml</exclude>
+            <exclude>**/*.yml</exclude>
             <exclude>src/test/resources/**</exclude>
             <exclude>src/main/resources/**</exclude>
           </excludes>
         </configuration>
         <executions>
           <execution>
+            <id>format</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>check</id>
             <goals>
               <goal>check</goal>
             </goals>
+            <phase>test</phase>
           </execution>
         </executions>
       </plugin>
