@@ -3,10 +3,10 @@
   <groupId>jp.furplag.sandbox.java.util</groupId>
   <artifactId>commons-wrap</artifactId>
   <versioning>
-    <release>2.0.1</release>
+    <release>2.0.1-final</release>
     <versions>
-      <version>2.0.1</version>
+      <version>2.0.1-final</version>
     </versions>
-    <lastUpdated>20181019090511</lastUpdated>
+    <lastUpdated>20210416035256</lastUpdated>
   </versioning>
 </metadata>
